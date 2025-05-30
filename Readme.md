@@ -15,9 +15,9 @@
    各種 Secret などは [こちら](https://www.graviness.com/app/pwg/?l=64&n=1&m=1&r=3&s=1&c=0-9A-Za-z!%22%23%24%25%26'()*%2B%2C%5C-.%2F%3A%3B%3C%3D%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~) などで作成しておく
 4. ```task setup``` を実行する 
     注意: すでに設置アップ済みの場合データベースの中身が削除されます
-5. https://localhost:8370/auth/_/ にアクセスして管理ユーザーを作成する
+5. https://localhost:8943/auth/_/ にアクセスして管理ユーザーを作成する
 6. ダッシュボードで各種プロバイダの設定をする
-7. https://localhost:8370/statics/ で確かめてみる
+7. https://localhost:8943/statics/ で確かめてみる
 8. 終わり
    
 ## セットアップの動作
