@@ -16,7 +16,7 @@
 4. ```task setup``` を実行する 
     注意: すでに設置アップ済みの場合データベースの中身が削除されます
 5. mysqlコンテナの起動が完了したら データベースコンテナを再起動する
-    ```docker compose restart auth```
+    ```task restart```
 6. https://localhost:8943/auth/_/ にアクセスして管理ユーザーを作成する
 7. ダッシュボードで各種プロバイダの設定をする
 8. https://localhost:8943/statics/ で確かめてみる
