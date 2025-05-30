@@ -1,39 +1,39 @@
 package models
 
 import (
+	"log"
+	"os"
+	// "os"
+
+	// "gorm.io/driver/sqlite"
 	"gorm.io/driver/mysql"
- 	"gorm.io/gorm"
+	// "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var (
 	dbconn *gorm.DB = nil
 )
 
-func OpenDB() (*gorm.DB,error) {
-	dsn := "main:main@tcp(db:3306)/maindb?charset=utf8mb4&parseTime=True&loc=Local"
+func Init() {
+	// データベースを開く
+	// db, err := gorm.Open(sqlite.Open(os.Getenv("DBPATH")), &gorm.Config{})
+	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	
+	// データベースの接続情報
+	dsn := os.Getenv("DATABASE_DSN")
+
+	// データベースを開く
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
-	// エラー処理
 	if err != nil {
-		return nil, err
+		log.Fatal("failed to connect database")
 	}
 
-	return db, nil
-}
-
-func Init() error {
-	// データベース接続
-	db, err := OpenDB()
-	if err != nil {
-		return err
-	}
+	// マイグレーション
+	db.AutoMigrate(&FriendRequest{})
+	db.AutoMigrate(&Friend{})
 
 	// グローバル変数に格納
 	dbconn = db
-
-	return nil
-}
-
-func GetDB() *gorm.DB {
-	return dbconn
 }

@@ -15,6 +15,23 @@ class AuthBase {
         this.baseURL = url;
     }
 
+    async login(username, password) {
+        const response = await fetch(this.baseURL + '/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            return data.token;
+        } else {
+            throw new Error('Login failed');
+        }
+    }
+
     // ログアウトする関数
     async Logout() {
         // ログアウトする (リフレッシュトークンでログアウトする)
@@ -22,7 +39,7 @@ class AuthBase {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                "Authorization": localStorage.getItem("token")
+                "Authorization" : localStorage.getItem("token")
             }
         });
 
@@ -41,7 +58,7 @@ class AuthBase {
         return;
     }
 
-    async OauthLogin(provider, LoginCallback) {
+    async OauthLogin(provider,LoginCallback) {
         // ポップアップ
         if (provider == "discord") {
             this.openPopup(this.baseURL + AuthBase.DiscordAuthURL);
@@ -96,24 +113,6 @@ class AuthBase {
         return null;
     }
 
-    // アイコンを更新する
-    async UpdateIcon(file) {
-        // フォームデータ作成
-        const payload = new FormData();
-        payload.append('file', file);
-
-        // アイコンを更新する
-        const req = await fetch(this.baseURL + '/icon', {
-            method: 'POST',
-            headers: {
-                "Authorization": localStorage.getItem("token")
-            },
-            body: payload
-        })
-
-        return req.ok;
-    }
-
     openPopup(url) {
         window.open(url + "?popup=1", "popupWindow", "width=1200,height=800");
 
@@ -125,7 +124,7 @@ class AuthBase {
         });
     }
 
-    async Post(url, headers, body) {
+    async Post(url,headers,body) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
 
@@ -136,10 +135,24 @@ class AuthBase {
             body: body
         });
 
-        return req;
+        if (req.ok) {
+            return await req.json();
+        }
+
+        return null;
     }
 
-    async Get(url, headers) {
+    async IsAuthed() {
+        const userData = await auth.GetInfo();
+
+        if (userData == null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    async Get(url,headers) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
 
@@ -149,9 +162,13 @@ class AuthBase {
             headers: headers,
         });
 
-        return req;
-    }
+        if (req.ok) {
+            return await req.json();
+        }
 
+        return null;
+    }
+    
     async GetInfo() {
         try {
             // 情報を取得
@@ -174,10 +191,6 @@ class AuthBase {
             console.error(error);
             return null;
         }
-    }
-
-    GetIcon(userid) {
-        return this.baseURL + "/icon/" + userid;
     }
 }
 

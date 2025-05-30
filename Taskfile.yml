@@ -55,12 +55,12 @@ tasks:
       - task: genkey
       - task: up
       - task: dbreset
-      - task: dashb
-  dashb:
-    cmds:
-      - docker compose exec dashboard npm i --verbose --force
-      - docker compose exec dashboard npm run build
-      - docker compose logs -f auth
+      # - task: dashb
+  # dashb:
+  #   cmds:
+  #     - docker compose exec dashboard npm i --verbose --force
+  #     - docker compose exec dashboard npm run build
+  #     - docker compose logs -f auth
   restart:
     cmds:
       - docker compose restart auth

@@ -1,12 +1,18 @@
 package utils
 
-import (
+import(
 	"github.com/google/uuid"
 )
 
-func GenID() string {
-	// UUID を生成
-	uidv4, _ := uuid.NewRandom()
+func Genid() (string, error) {
 
-	return uidv4.String()
+	//UUIDを生成する
+	uuid_obj, err := uuid.NewRandom()
+
+	//エラー処理
+	if err != nil {
+		return "", err
+	}
+
+	return uuid_obj.String(),nil
 }

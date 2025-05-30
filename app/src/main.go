@@ -1,54 +1,79 @@
 package main
 
 import (
+	"net/http"
+	"app/controllers"
 	"app/grpckit"
 	"app/middlewares"
 	"app/models"
-	"app/services"
-	"net/http"
+	rediscache "app/redis-cache"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-func Init() {
+func main() {
 	// モデル初期化
 	models.Init()
 
-	// サービス初期化
-	services.Init()
+	// redis 初期化
+	rediscache.Init()
+
+	// grpc 初期化
+	grpckit.Init()
 
 	// ミドルウェア初期化
 	middlewares.Init()
 
-	// GRPC クライアント初期化
-	grpckit.Init()
-
-	// result,err := grpckit.SearchUser("", "test")
-
-	// // エラー処理
-	// if err != nil {
-	// 	logger.PrintErr(err)
-	// 	return
-	// }
-
-	// logger.Println(result)
-}
-
-func main() {
-	// 初期化
-	Init()
-
-	// ルータ
+	// ルーター
 	router := echo.New()
 
-	// ルーティング設定
-	SetupRouter(router)
+	// router.Use(middleware.Recover())
+	router.Use(middleware.Logger())
+	// router.Use(middlewares.PocketAuth())
 
-	// ヘルスチェック
-	router.GET("/health", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "OK")
-	})
+	router.GET("/", func(ctx echo.Context) error {
+		return ctx.JSON(http.StatusOK, echo.Map{
+			"result": "hello world",
+		})
+	}, middlewares.RequireAuth)
 
-	router.Logger.Fatal(router.Start(":8080"))
+	// フレンドグループ
+	friendg := router.Group("/friend")
+	{
+		// ミドルウェア設定
+		friendg.Use(middlewares.RequireAuth)
+
+		// 検索するエンドポイント
+		friendg.POST("/search",controllers.SearchUser)
+
+		// フレンド一覧取得
+		friendg.GET("/list",controllers.GetFriendList)
+
+		// リクエスト(送信)
+		friendg.POST("/request",controllers.FriendRequest)
+
+		// 送信済みリクエスト 取得
+		friendg.GET("/sentrequest",controllers.GetSentRequest)
+
+		// 受信済みリクエスト 取得
+		friendg.GET("/recvrequest",controllers.RecvedRequest)
+
+		// リクエストを承認する
+		friendg.POST("/accept",controllers.AcceptRequest)
+
+		// リクエストを拒否する
+		friendg.POST("/reject",controllers.RejectRequest)
+
+		// フレンド削除
+		friendg.POST("/remove",controllers.RemoveFriend)
+
+		// リクエストをキャンセル
+		friendg.POST("/cancel",controllers.CancelRequest)
+	}
+	
+	// websocket 用
+	// router.GET("/ws", websocket.HandleWs)
+
+	router.Logger.Fatal(router.Start(":8090"))
 }

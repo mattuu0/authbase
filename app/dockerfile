@@ -1,8 +1,11 @@
-FROM golang:1.24.1-bullseye as Develop
+# デバッグ用
+FROM golang:1.23.6-bullseye as Develop
 
-# 各種ツールインストール
-RUN apt update & apt install -y curl wget git 
+# apt 更新
+RUN apt update
+RUN apt install -y git wget curl
 
+# 作業ディレクトリを設定
 WORKDIR /root/src
 
 # AIR のインストール
@@ -10,24 +13,20 @@ RUN go install github.com/air-verse/air@latest
 
 CMD ["air", "-c", ".air.toml"]
 
-# Build 
-FROM golang:1.24.1-bullseye as build
+# リリース用
+FROM golang:1.23.6-bullseye as Release
 
-# 各種ツールインストール
-RUN apt update & apt install -y curl wget git
+# 作業ディレクトリを設定
+WORKDIR /root/app
 
-# コピー
-COPY ./src /root/src
+# プロジェクトをコピー
+COPY ./src /root/app
 
-# ディレクトリ移動
-WORKDIR /root/src
-
-# 依存モジュールインストール
+# プロジェクトをビルド
 RUN go mod download
-# ビルド
-RUN CGO_ENABLED=0 go build -x --ldflags "-s -w" -o /go/bin/app .
+RUN CGO_ENABLED=0 go build -x -o app_server .
 
-# 実行環境
-FROM gcr.io/distroless/static-debian12 as Release
-COPY --from=build /go/bin/app /
-CMD ["/app"]
+# Now copy it into our base image.
+FROM gcr.io/distroless/static-debian12
+COPY --from=Release /root/app/app_server /
+CMD ["/app_server"]

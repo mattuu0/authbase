@@ -1,3 +1,0 @@
-const baseURL = "..";
-
-export { baseURL }

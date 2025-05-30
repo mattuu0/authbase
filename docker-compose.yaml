@@ -4,56 +4,35 @@ services:
         hostname: nginx
         image: nginx:latest
         ports:
-            - 8370:8443
+            - 8943:8443
         restart: always
         tty: true
         volumes:
             - ./nginx/configs:/etc/nginx/conf.d/
             - ./nginx/keys:/etc/nginx/keys
             - ./nginx/statics:/etc/nginx/static/statics
-
+    
     # 認証用コンテナ
     auth:
         hostname: auth
-        build:
-            context: ./auth
-            dockerfile: dockerfile
-            target: Release
-            # target: Develop
         image: mattuu0/authbase-auth:0.2
-        tty: true
-        stdin_open: true
         env_file:
             - ./openssl/jwtKeys/private.env
             - ./config/auth.env
         volumes:
             - ./auth/src:/root/src
-            - iconVol:/assets/icons
-            - distvol:/root/src/dashboard
+            - ./auth/icons:/assets/icons
         restart: always
         depends_on:
             mysql:
                 condition: service_healthy
-
-    # ダッシュボード
-    dashboard:
-        hostname: dashboard
-        build:
-            context: ./dashboard
-            dockerfile: dockerfile
-            target: Develop
-        tty: true
-        volumes:
-            - distvol:/root/src/dist
-            - ./dashboard/src:/root/src
-        restart: always
-
-    # 認証用コンテナ
+    
+    # アプリコンテナ
     app:
         hostname: app
         build:
             context: ./app
-            dockerfile: dockerfile
+            dockerfile: Dockerfile
             target: Develop
         tty: true
         env_file:
@@ -66,8 +45,8 @@ services:
             mysql:
                 condition: service_healthy
             auth:
-                condition: service_started
 
+                condition: service_started
     # データベース
     mysql:
         hostname: db
@@ -85,10 +64,11 @@ services:
             interval: 5s
             timeout: 10s
             retries: 5
-
+    redis:
+        hostname: redis
+        image: redis:latest
+        restart: always
+        ports:
+            - 6379:6379
 volumes:
     dbdata:
-
-    iconVol:
-
-    distvol:
