@@ -17,9 +17,6 @@ var (
 
 func Init() {
 	// データベースを開く
-	// db, err := gorm.Open(sqlite.Open(os.Getenv("DBPATH")), &gorm.Config{})
-	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	// db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	
 	// データベースの接続情報
 	dsn := os.Getenv("DATABASE_DSN")
@@ -31,8 +28,7 @@ func Init() {
 	}
 
 	// マイグレーション
-	db.AutoMigrate(&FriendRequest{})
-	db.AutoMigrate(&Friend{})
+	// db.AutoMigrate(&sample{})
 
 	// グローバル変数に格納
 	dbconn = db
