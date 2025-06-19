@@ -21,6 +21,9 @@ func Init() {
 	// 環境変数から秘密鍵を取得
 	certString := os.Getenv("JWT_PRIVATE_KEY")
 
+	logger.Println("TOKEN_SECRET: " + TokenSecret)
+	logger.Println("JWT_PRIVATE_KEY: " + certString)
+
 	// 秘密鍵を初期化
 	initJwt(certString)
 
