@@ -15,7 +15,7 @@ services:
     # 認証用コンテナ
     auth:
         hostname: auth
-        image: mattuu0/authbase-auth:0.2
+        image: mattuu0/authbase-auth:0.2.1
         build:
             context: ./auth
             dockerfile: dockerfile
