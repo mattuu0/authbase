@@ -52,6 +52,13 @@ async function Init() {
         uploadButton.addEventListener('click',async () => {
             await auth.UpdateIcon(fileInput.files[0]);
         });
+
+        // アクセスしてみる
+        const res = await auth.Get('/app/',{
+            'Content-Type': 'application/json',
+        });
+
+        console.log(res);
     } catch (error) {
         console.error(error);
         // ログインにリダイレクト
