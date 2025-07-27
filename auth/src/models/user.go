@@ -62,7 +62,7 @@ func GetUser(userID string) (*User, GetResult) {
 	var user User
 
 	// 取得する
-	err := dbconn.Where(&User{UserID: userID}).First(&user).Error
+	err := dbconn.Where(&User{UserID: userID}).Preload("Labels").First(&user).Error
 
 
 	return &user, GetResult{

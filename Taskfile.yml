@@ -61,6 +61,10 @@ tasks:
   #     - docker compose exec dashboard npm i --verbose --force
   #     - docker compose exec dashboard npm run build
   #     - docker compose logs -f auth
+  push:
+    cmds:
+      - docker buildx build --platform linux/amd64,linux/arm64 --push --tag mattuu0/authbase-auth:0.2.2 ./auth
+      - docker buildx build --platform linux/amd64,linux/arm64 --push --tag mattuu0/authbase-auth:latest ./auth
   restart:
     cmds:
       - docker compose restart auth
