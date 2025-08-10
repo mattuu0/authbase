@@ -63,7 +63,7 @@ tasks:
   #     - docker compose logs -f auth
   push:
     cmds:
-      - docker buildx build --platform linux/amd64,linux/arm64 --push --tag mattuu0/authbase-auth:0.2.2 ./auth
+      - docker buildx build --platform linux/amd64,linux/arm64 --push --tag mattuu0/authbase-auth:0.2.3 ./auth
       - docker buildx build --platform linux/amd64,linux/arm64 --push --tag mattuu0/authbase-auth:latest ./auth
   restart:
     cmds:
