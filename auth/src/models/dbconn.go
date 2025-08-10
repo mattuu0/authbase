@@ -1,6 +1,7 @@
 package models
 
 import (
+	"auth/logger"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -23,19 +24,76 @@ func OpenDB() (*gorm.DB,error) {
 	return db, nil
 }
 
+func MigreteTable(db *gorm.DB) error {
+	logger.Println("マイグレーションを実行しています...")
+
+	// マイグレーション
+	err := db.AutoMigrate(&User{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("User テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+	
+	// マイグレーション
+	err = db.AutoMigrate(&Provider{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Provider テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&Session{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Session テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&Label{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Label テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&AdminUser{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("AdminUser テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	logger.Println("マイグレーションを実行しました")
+
+	return nil
+}
+
 func Init() error {
+	logger.Println("データベース接続を確立しています...")
+
 	// データベース接続
 	db, err := OpenDB()
 	if err != nil {
+		logger.PrintErr("データベース接続に失敗しました", err)
 		return err
 	}
 
 	// データベース接続確認
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Provider{})
-	db.AutoMigrate(&Session{})
-	db.AutoMigrate(&Label{})
-	db.AutoMigrate(&AdminUser{})
+	err = MigreteTable(db)
+
+	// エラー処理
+	if err != nil {
+		return err
+	}
 
 	// グローバル変数に格納
 	dbconn = db

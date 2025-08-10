@@ -1,6 +1,7 @@
 package main
 
 import (
+	"auth/cmd"
 	"auth/grpckit"
 	"auth/models"
 	"auth/oauth2"
@@ -26,6 +27,9 @@ func Init() {
 }
 
 func main() {
+	// コマンドを実行する
+	cmd.Execute()
+
 	// 初期化
 	Init()
 
