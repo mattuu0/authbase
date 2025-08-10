@@ -29,8 +29,20 @@ services:
             - ./auth/icons:/assets/icons
         restart: always
         depends_on:
-            mysql:
-                condition: service_healthy
+            # マイグレーションが終わるまで
+            migrate:
+                condition: service_completed_successfully
+    
+    # マイグレーション
+    migrate:
+        image: mattuu0/authbase-auth:0.2.2
+        build:
+            context: ./auth
+            dockerfile: dockerfile
+            # target: Develop
+        env_file:
+            - ./config/auth.env
+        command: ["/auth","migrate","-r"]
 
     # アプリコンテナ
     app:
