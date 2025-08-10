@@ -27,11 +27,48 @@ func OpenDB() (*gorm.DB,error) {
 func MigreteTable(db *gorm.DB) error {
 	logger.Println("マイグレーションを実行しています...")
 
-	// データベース接続確認
-	err := db.AutoMigrate(&User{}, &Provider{}, &Session{}, &Label{}, &AdminUser{})	
+	// マイグレーション
+	err := db.AutoMigrate(&User{})
 
 	// エラー処理
 	if err != nil {
+		logger.PrintErr("User テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+	
+	// マイグレーション
+	err = db.AutoMigrate(&Provider{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Provider テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&Session{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Session テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&Label{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("Label テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&AdminUser{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("AdminUser テーブルのマイグレーションに失敗しました", err)
 		return err
 	}
 

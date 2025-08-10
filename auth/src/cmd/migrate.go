@@ -7,33 +7,42 @@ import (
 	"auth/logger"
 	"auth/models"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
+var Retry *bool
+
 // migrateCmd represents the migrate command
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "データベースをマイグレーションする",
+	Long: `データベースをマイグレーションする`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Println("マイグレーションを実行しています...")
+		for {
+			logger.Println("マイグレーションを実行しています...")
 
-		// モデルを呼び出す
-		err := models.Init()
+			// モデルを呼び出す
+			err := models.Init()
 
-		// エラー処理
-		if err != nil {
-			logger.PrintErr("マイグレーションに失敗しました", err)
-			os.Exit(1)
+			// エラー処理
+			if err != nil {
+				logger.PrintErr("マイグレーションに失敗しました", err)
+
+				// 再試行するか
+				if *Retry {
+					logger.Println("500ms 後に再試行します")
+					time.Sleep(500 * time.Millisecond)
+					continue
+				}
+
+				os.Exit(1)
+			}
+
+			logger.Println("マイグレーション完了")
+			break
 		}
-
-		logger.Println("マイグレーション完了")
 
 		// 終了する
 		os.Exit(0)
@@ -51,5 +60,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// migrateCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	Retry = migrateCmd.Flags().BoolP("retry", "r", false, "成功するまでリトライするか")
 }
