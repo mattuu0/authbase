@@ -39,7 +39,6 @@ services:
         build:
             context: ./auth
             dockerfile: dockerfile
-            # target: Develop
         env_file:
             - ./config/auth.env
         command: ["/auth","migrate","-r"]
