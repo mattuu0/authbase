@@ -54,7 +54,7 @@ tasks:
     cmds:
       - task: genkey
       - task: up
-      - task: dbreset
+      # - task: dbreset
       # - task: dashb
   # dashb:
   #   cmds:
