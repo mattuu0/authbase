@@ -1,6 +1,7 @@
 package models
 
 import (
+	"auth/logger"
 	"os"
 
 	"gorm.io/driver/mysql"
@@ -23,19 +24,39 @@ func OpenDB() (*gorm.DB,error) {
 	return db, nil
 }
 
-func Init() error {
-	// データベース接続
-	db, err := OpenDB()
+func MigreteTable(db *gorm.DB) error {
+	logger.Println("マイグレーションを実行しています...")
+
+	// データベース接続確認
+	err := db.AutoMigrate(&User{}, &Provider{}, &Session{}, &Label{}, &AdminUser{})	
+
+	// エラー処理
 	if err != nil {
 		return err
 	}
 
+	logger.Println("マイグレーションを実行しました")
+
+	return nil
+}
+
+func Init() error {
+	logger.Println("データベース接続を確立しています...")
+
+	// データベース接続
+	db, err := OpenDB()
+	if err != nil {
+		logger.PrintErr("データベース接続に失敗しました", err)
+		return err
+	}
+
 	// データベース接続確認
-	db.AutoMigrate(&User{})
-	db.AutoMigrate(&Provider{})
-	db.AutoMigrate(&Session{})
-	db.AutoMigrate(&Label{})
-	db.AutoMigrate(&AdminUser{})
+	err = MigreteTable(db)
+
+	// エラー処理
+	if err != nil {
+		return err
+	}
 
 	// グローバル変数に格納
 	dbconn = db

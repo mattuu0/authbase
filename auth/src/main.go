@@ -27,6 +27,7 @@ func Init() {
 }
 
 func main() {
+	// コマンドを実行する
 	cmd.Execute()
 
 	// 初期化
