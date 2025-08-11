@@ -1,5 +1,6 @@
 import secrets
 import os
+import sys
 
 def generate_random_key(length=64):
     """
@@ -21,6 +22,22 @@ def get_oauth_credentials(provider_name):
     else:
         # 'n'が入力された場合は空の文字列を返す
         return "", ""
+
+def confirm_overwrite_all(files_to_check):
+    """
+    主要な設定ファイルが存在するかを確認し、上書きするかを尋ねます。
+    上書きが許可されない場合はFalseを返します。
+    """
+    existing_files = [f for f in files_to_check if os.path.exists(f)]
+
+    if existing_files:
+        print("\n--- ファイルの上書き確認 ---")
+        print(f"以下のファイルが既に存在します: {', '.join(existing_files)}")
+        response = input("これらのファイルをすべて上書きしますか？ (y/n): ")
+        if response.lower() != 'y':
+            print("ファイルの生成を中止しました。")
+            return False
+    return True
 
 def create_env_file(file_path, content):
     """
@@ -72,14 +89,21 @@ GRPC_ADDR = ":9000"
     create_env_file("auth.env", auth_env_template)
 
 def main():
-    # フォルダを移動する
-    os.chdir("./data")
-
     """
     メイン処理：複数の設定ファイル生成関数を呼び出します。
     """
+    # 作業ディレクトリを./dataに移動し、存在しなければ作成
+    data_dir = "./data"
+    os.makedirs(data_dir, exist_ok=True)
+    os.chdir(data_dir)
+
     print("--- OAuth およびアプリケーション設定の開始 ---")
-    
+
+    # ファイルの上書き確認を行い、許可されない場合は終了
+    files_to_check = ["auth.env", "app.env"]
+    if not confirm_overwrite_all(files_to_check):
+        return
+
     # auth.env ファイルを生成
     create_auth_env()
 
@@ -95,7 +119,7 @@ DATABASE_DSN = "main:main@tcp(db:3306)/maindb?charset=utf8mb4&parseTime=True&loc
     create_env_file("app.env", app_env_template)
 
     print(f"\n--- 設定完了！ ---")
-    print(f"設定ファイルがすべて生成されました。")
+    print(f"設定ファイルがすべて './data' ディレクトリに生成されました。")
 
 if __name__ == "__main__":
     main()
