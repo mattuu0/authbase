@@ -54,8 +54,18 @@ func CreateProvider(provider *Provider) error {
 	return dbconn.Create(provider).Error
 }
 
+func BoolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 // プロバイダを初期化する
 func InitProviders() {
+	// Google が有効かどうか
+	isGoogleEnabled := os.Getenv("GoogleClientID") != "" && os.Getenv("GoogleClientSecret") != ""
+
 	// Google
 	err := CreateProvider(&Provider{
 		ProviderName: "Google",
@@ -63,7 +73,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("GoogleClientSecret"),
 		CallbackURL:  os.Getenv("GoogleCallback"),
 		ProviderCode: Google,
-		IsEnabled:    0,
+		IsEnabled:    BoolToInt(isGoogleEnabled),
 		Users:        []User{},
 	})
 
@@ -71,6 +81,9 @@ func InitProviders() {
 	if err != nil {
 		logger.PrintErr(err)
 	}
+
+	// GitHub が有効かどうか
+	isGithubEnabled := os.Getenv("GithubClientID") != "" && os.Getenv("GithubClientSecret") != ""
 
 	// GitHub
 	err = CreateProvider(&Provider{
@@ -79,7 +92,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("GithubClientSecret"),
 		CallbackURL:  os.Getenv("GithubCallback"),
 		ProviderCode: Github,
-		IsEnabled:    0,
+		IsEnabled:    BoolToInt(isGithubEnabled),
 		Users:        []User{},
 	})
 
@@ -87,6 +100,9 @@ func InitProviders() {
 	if err != nil {
 		logger.PrintErr(err)
 	}
+
+	// Discord が有効かどうか
+	isDiscordEnabled := os.Getenv("DiscordClientID") != "" && os.Getenv("DiscordClientSecret") != ""
 
 	// Discord
 	err = CreateProvider(&Provider{
@@ -95,7 +111,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("DiscordClientSecret"),
 		CallbackURL:  os.Getenv("DiscordCallback"),
 		ProviderCode: Discord,
-		IsEnabled:    0,
+		IsEnabled:    BoolToInt(isDiscordEnabled),
 		Users:        []User{},
 	})
 
@@ -104,6 +120,9 @@ func InitProviders() {
 		logger.PrintErr(err)
 	}
 
+	// Microsoft が有効かどうか
+	isMicrosoftEnabled := os.Getenv("MicrosoftClientID") != "" && os.Getenv("MicrosoftClientSecret") != ""
+
 	// Microsoft
 	err = CreateProvider(&Provider{
 		ProviderName: "Microsoft",
@@ -111,7 +130,7 @@ func InitProviders() {
 		ClientSecret: os.Getenv("MicrosoftClientSecret"),
 		CallbackURL:  os.Getenv("MicrosoftCallback"),
 		ProviderCode: Microsoft,
-		IsEnabled:    0,
+		IsEnabled:    BoolToInt(isMicrosoftEnabled),
 		Users:        []User{},
 	})
 
