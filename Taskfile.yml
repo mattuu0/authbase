@@ -52,8 +52,14 @@ tasks:
   # 初回セットアップ
   setup:
     cmds:
+      - echo "セットアップを開始します"
+      - echo "設定用のコンテナを生成しています"
+      - task: config
+      - echo "JWT鍵を生成しています"
       - task: genkey
+      - echo "コンテナを起動しています"
       - task: up
+    silent: true
       # - task: dbreset
       # - task: dashb
   # dashb:
@@ -70,6 +76,7 @@ tasks:
       - docker compose restart auth
       - docker compose restart app
       - docker compose restart nginx
+
   genkey:
     cmds:
       - cmd: docker run --rm -it -v .\\openssl\\jwtKeys:/jwtkeys -v .\\nginx\\keys:/sslkeys {{.Build_Image}}
@@ -79,3 +86,15 @@ tasks:
     vars:
       Build_Image:
         sh: docker build -q ./openssl
+  
+  config:
+    cmds:
+      - cmd: docker run --rm -it -v .\\config:/config/data {{.Build_Image}}
+        platforms: [windows]
+      - cmd: docker run --rm -it -v ./config:/config/data {{.Build_Image}}
+        platforms: [linux,darwin]
+      - echo "設定用のイメージを削除しています"
+      - docker rmi -f {{.Build_Image}}
+    vars:
+      Build_Image:
+        sh: docker build -q ./config
