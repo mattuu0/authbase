@@ -52,6 +52,26 @@ func Init() {
 
 		return nil
 	})
+
+	// adminのenv が設定されている場合
+	adminEmail := os.Getenv("AdminEmail")
+	adminPassword := os.Getenv("AdminPassword")
+
+	// admin が有効か
+	if adminEmail != "" && adminPassword != "" {
+		logger.Println("管理者ユーザーを作成しています")
+		
+		// 管理者用のユーザーを作成する
+		err := CreateAdminUser(CreateAdminUserArgs{
+			Username: adminEmail,
+			Password: adminPassword,
+		})
+
+		// エラー処理
+		if err != nil {
+			logger.PrintErr(err)
+		}
+	}
 }
 
 // GetFileNameWithoutExtension は指定されたパスからファイル名の拡張子なしの部分を取得します。
