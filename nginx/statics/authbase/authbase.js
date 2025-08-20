@@ -15,7 +15,9 @@ class AuthBase {
         this.baseURL = url;
     }
 
+    // ユーザー名とパスワードでログインする関数
     async login(username, password) {
+        // ログイン
         const response = await fetch(this.baseURL + '/auth/login', {
             method: 'POST',
             headers: {
@@ -24,8 +26,12 @@ class AuthBase {
             body: JSON.stringify({ username, password })
         });
 
+        // 成功したかどうか
         if (response.ok) {
+            // 成功したとき
             const data = await response.json();
+
+            // トークンを保存する
             return data.token;
         } else {
             throw new Error('Login failed');
@@ -58,6 +64,7 @@ class AuthBase {
         return;
     }
 
+    // 指定したプロバイダでログインする関数
     async OauthLogin(provider,LoginCallback) {
         // ポップアップ
         if (provider == "discord") {
@@ -80,6 +87,7 @@ class AuthBase {
         this.LoginCallback = LoginCallback;
     }
 
+    // トークンを取得
     async getToken() {
         // 5分以内なら更新しない
         if (Date.now() - window.sessionStorage.getItem("actime") < 5 * 60 * 1000) {
@@ -113,10 +121,14 @@ class AuthBase {
         return null;
     }
 
+    // ポップアップを開く関数
     openPopup(url) {
+        // ウィンドウを開く
         window.open(url + "?popup=1", "popupWindow", "width=1200,height=800");
 
+        // コールバックを設定する
         window.addEventListener("message", (event) => {
+            // ログインが成功してたとき
             if (event.data == "Login-Success") {
                 // コールバック
                 this.LoginCallback();
@@ -124,6 +136,7 @@ class AuthBase {
         });
     }
 
+    // 認証情報つきでポストする関数
     async Post(url,headers,body) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
@@ -142,16 +155,22 @@ class AuthBase {
         return null;
     }
 
+    // 認証済みか
     async IsAuthed() {
+        // ユーザー情報を取得
         const userData = await auth.GetInfo();
 
+        // ユーザー情報がない場合
         if (userData == null) {
+            // ログインしていない状態にする
             return false;
         }
 
+        // 認証済み
         return true;
     }
 
+    // 認証情報つきでGetする関数
     async Get(url,headers) {
         // header にトークンを追加
         headers.Authorization = await this.getToken();
@@ -162,13 +181,17 @@ class AuthBase {
             headers: headers,
         });
 
+        // 成功している場合
         if (req.ok) {
+            // json を返す
             return await req.json();
         }
 
+        // 失敗
         return null;
     }
     
+    // 情報を取得
     async GetInfo() {
         try {
             // 情報を取得
@@ -180,7 +203,9 @@ class AuthBase {
                 }
             });
 
+            // 失敗
             if (!req.ok) {
+                // 情報を取得できなかった
                 return null;
             }
 
@@ -194,10 +219,12 @@ class AuthBase {
     }
 }
 
+// 使えるようにエクスポートする
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AuthBase;
 }
 
+// ウェブで使えるようにエクスポートする
 if (typeof window !== 'undefined') {
     window.AuthBase = AuthBase;
 }
