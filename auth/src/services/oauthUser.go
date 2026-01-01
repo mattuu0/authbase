@@ -41,6 +41,18 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 			return "", errors.New("同一プロバイダのユーザーが見つかりません")
 		}
 
+		// ファイルが存在するかを確認する
+		if !utils.CheckExistFile(IconDir + "/" + uid + ".png") {
+			// 存在しないとき			
+			// 画像を保存
+			err := ProcessImageFromURL(IconDir + "/" + uid + ".png", args.AvaterURL, MaxImageSize, 10)
+
+			// エラー処理
+			if err != nil {
+				return "", err
+			}
+		}
+		
 		// セッションを追加する
 		token, err := NewSession(SessionArgs{
 			UserID:    user.UserID,
