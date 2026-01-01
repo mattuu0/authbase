@@ -100,6 +100,7 @@ TOKEN_SECRET = {token_secret_key}
 ADMIN_SESSION_KEY = {admin_session_key}
 
 GRPC_ADDR = ":9000"
+CUSTOM_SCHEME = "authbase"
 """
     create_env_file("auth.env", auth_env_template)
 

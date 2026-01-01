@@ -82,7 +82,7 @@ func CallbackOauth(ctx echo.Context) error {
 
 	// モバイル場合
 	if oauthResponse.IsMobile {
-		return ctx.Redirect(http.StatusFound, "authbase://?token="+token)
+		return ctx.Redirect(http.StatusFound, CUSTOM_SCHEME + "://?token="+token)
 	}
 
 	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token, "isPopup": isPopup})
