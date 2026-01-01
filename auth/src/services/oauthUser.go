@@ -1,6 +1,7 @@
 package services
 
 import (
+	"auth/logger"
 	"auth/models"
 	"auth/utils"
 	"errors"
@@ -42,10 +43,12 @@ func LoginOauthUser(args OauthUserArgs) (string, error) {
 		}
 
 		// ファイルが存在するかを確認する
-		if !utils.CheckExistFile(IconDir + "/" + uid + ".png") {
+		if !utils.CheckExistFile(IconDir + "/" + user.UserID + ".png") {
+			logger.Println("ファイルが存在しなかったためユーザーID:" + user.UserID + "のアバターを保存しています...")
+
 			// 存在しないとき			
 			// 画像を保存
-			err := ProcessImageFromURL(IconDir + "/" + uid + ".png", args.AvaterURL, MaxImageSize, 10)
+			err := ProcessImageFromURL(IconDir + "/" + user.UserID + ".png", args.AvaterURL, MaxImageSize, 10)
 
 			// エラー処理
 			if err != nil {
