@@ -23,7 +23,7 @@
             width: 100%;
             max-width: 400px;
         }
-        h1 { margin-bottom: 2rem; color: #1c1e21; }
+        h1 { margin-bottom: 2rem; color: #1c1e21; font-size: 1.5rem; }
         .oauth-button {
             display: block;
             width: 100%;
@@ -38,7 +38,7 @@
         }
         .oauth-button:hover { background-color: #f5f6f7; }
         
-        #loading, #open-app-content {
+        .status-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -48,7 +48,7 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            border-left-color: #09f;
+            border-left-color: #007bff;
             animation: spin 1s linear infinite;
             margin-bottom: 1rem;
         }
@@ -56,7 +56,10 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        #login-content, #open-app-content { display: none; }
+        
+        /* 初期状態は全て非表示 */
+        #loading, #login-content, #open-app-content { display: none; }
+        
         .btn {
             display: inline-block;
             background-color: #007bff;
@@ -70,12 +73,13 @@
     </style>
 </head>
 <body>
-    <div id="loading">
+    <!-- 状態1：確認中 -->
+    <div id="loading" class="status-container">
         <div class="spinner"></div>
-        <p id="loading-text">確認中...</p>
+        <p>確認中...</p>
     </div>
 
-    <!-- モバイル用：アプリ起動画面 -->
+    <!-- 状態2：アプリ起動画面（モバイル用） -->
     <div id="open-app-content" class="container">
         <div class="spinner"></div>
         <h1>アプリを起動しています</h1>
@@ -83,7 +87,7 @@
         <a id="app-link" href="#" class="btn">アプリを開く</a>
     </div>
 
-    <!-- PC用・未ログイン時：ログイン画面 -->
+    <!-- 状態3：ログイン画面（未ログイン/PC用） -->
     <div id="login-content" class="container">
         <h1>AuthBase ログイン</h1>
         <div class="oauth-buttons">
@@ -98,6 +102,16 @@
         const isPopupParam = "{{.IsPopup}}";
         const isMobileParam = "{{.IsMobile}}";
         const customScheme = "{{.CustomScheme}}";
+
+        const elLoading = document.getElementById('loading');
+        const elLogin = document.getElementById('login-content');
+        const elOpenApp = document.getElementById('open-app-content');
+
+        function hideAll() {
+            elLoading.style.display = 'none';
+            elLogin.style.display = 'none';
+            elOpenApp.style.display = 'none';
+        }
 
         function isMobile() {
             return isMobileParam === "1";
@@ -116,9 +130,8 @@
         }
 
         function showLogin() {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('open-app-content').style.display = 'none';
-            document.getElementById('login-content').style.display = 'block';
+            hideAll();
+            elLogin.style.display = 'block';
             
             if (isMobile()) {
                 const links = document.querySelectorAll('.oauth-button');
@@ -131,22 +144,27 @@
             }
         }
 
-        function showOpenApp(token) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('login-content').style.display = 'none';
-            document.getElementById('open-app-content').style.display = 'block';
+        async function showOpenApp(token) {
+            hideAll();
+            // 確認中スピナーが消えた後、少し間を置いてから表示
+            await new Promise(r => setTimeout(r, 300));
+            
+            elOpenApp.style.display = 'block';
             
             const url = customScheme + "://?token=" + token;
             document.getElementById('app-link').href = url;
             
-            // 自動起動試行
+            // アプリ起動試行
             setTimeout(() => {
                 window.location.href = url;
-            }, 800);
+            }, 1000);
         }
 
         async function init() {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 最初に「確認中」を表示
+            elLoading.style.display = 'flex';
+            
+            await new Promise(resolve => setTimeout(resolve, 800));
 
             const token = localStorage.getItem('token');
             const isValid = await verifyToken(token);
@@ -161,10 +179,11 @@
                 }
 
                 if (isMobile()) {
-                    showOpenApp(token);
+                    await showOpenApp(token);
                     return;
                 }
 
+                hideAll();
                 window.location.href = '/statics/';
                 return;
             } else {
