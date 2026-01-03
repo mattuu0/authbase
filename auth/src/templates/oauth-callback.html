@@ -3,11 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>リダイレクトしています</title>
+    <title>ログイン中 - AuthBase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .message {
+            text-align: center;
+            color: #4b4f56;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
+    <div class="message">
+        <div class="spinner"></div>
+        <p>ログイン情報を処理しています...</p>
+    </div>
     <div style="display: none;" id="token">{{index . "token"}}</div>
     <div style="display: none;" id="isPopup">{{index . "isPopup"}}</div>
+    <div style="display: none;" id="isMobile">{{index . "isMobile"}}</div>
     <script>
         // トークンを取得
         const token = document.getElementById('token').textContent;
@@ -15,22 +48,35 @@
         // トークンをローカルストレージに保存
         localStorage.setItem('token', token);
 
-        // isPopup を取得
+        // 各フラグを取得
         const isPopup = document.getElementById('isPopup').textContent;
+        const isMobile = document.getElementById('isMobile').textContent;
 
         setTimeout(function() {
             if (isPopup === "1") {
                 // 親ウィンドウにメッセージを送信
                 const parent = window.opener
-                parent.postMessage("Login-Success", "*")
+                if (parent) {
+                    parent.postMessage("Login-Success", "*")
+                }
 
-                // ポップアップウィンドウを閉じる
+                // ポップアップウィンドウを閉じる
                 window.close();
                 return
             }
 
-            window.location.href = "/statics/"; // メイン画面へのURLを指定
-        }, 0); // 0秒後にリダイレクト
+            // login にリダイレクトする形に変更
+            let redirectUrl = "../../login";
+            const params = [];
+            if (isMobile === "1") params.push("ismobile=1");
+            if (isPopup === "1") params.push("ispopup=1");
+            
+            if (params.length > 0) {
+                redirectUrl += "?" + params.join("&");
+            }
+
+            window.location.href = redirectUrl;
+        }, 500); // 0.5秒後にリダイレクト
     </script>
 </body>
 </html>

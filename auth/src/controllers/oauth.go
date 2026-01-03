@@ -80,14 +80,17 @@ func CallbackOauth(ctx echo.Context) error {
 	ctx.Response().Header().Set("Pragma", "no-cache")
 	ctx.Response().Header().Set("X-Accel-Expires", "0")
 
-	// モバイル場合
+	// モバイル場合でも一度 oauth-callback を経由させてローカルストレージに保存させる
+	isMobile := "0"
 	if oauthResponse.IsMobile {
-		return ctx.Redirect(http.StatusFound, CUSTOM_SCHEME + "://?token="+token)
+		isMobile = "1"
 	}
 
-	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{"token": token, "isPopup": isPopup})
-	// return ctx.JSON(http.StatusOK, echo.Map{"token": token})
-	// return ctx.Redirect(http.StatusFound, "/auth/")
+	return ctx.Render(http.StatusOK, "oauth-callback.html", echo.Map{
+		"token":    token,
+		"isPopup":  isPopup,
+		"isMobile": isMobile,
+	})
 }
 
 func GetName(user goth.User) string {

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - AuthBase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { margin-bottom: 2rem; color: #1c1e21; }
+        .oauth-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #4b4f56;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .oauth-button:hover { background-color: #f5f6f7; }
+        
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #login-content { display: none; }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>確認中...</p>
+    </div>
+
+    <div id="login-content" class="container">
+        <h1>AuthBase ログイン</h1>
+        <div class="oauth-buttons">
+            <a href="./oauth/google" class="oauth-button">Googleでログイン</a>
+            <a href="./oauth/github" class="oauth-button">GitHubでログイン</a>
+            <a href="./oauth/discord" class="oauth-button">Discordでログイン</a>
+            <a href="./oauth/microsoftonline" class="oauth-button">Microsoftでログイン</a>
+        </div>
+    </div>
+
+    <script>
+        const isPopupParam = "{{.IsPopup}}";
+        const isMobileParam = "{{.IsMobile}}";
+
+        function isMobile() {
+            // クエリパラメータからのみ判定（UA判定は削除）
+            return isMobileParam === "1";
+        }
+
+        async function verifyToken(token) {
+            if (!token) return false;
+            try {
+                const response = await fetch('./me', {
+                    headers: { 'Authorization': token }
+                });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function showLogin() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('login-content').style.display = 'block';
+            
+            // モバイルの場合はリンクを更新
+            if (isMobile()) {
+                const links = document.querySelectorAll('.oauth-button');
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href.includes('/oauth/')) {
+                        link.href = href + (href.includes('?') ? '&' : '?') + 'ismobile=1';
+                    }
+                });
+            }
+        }
+
+        async function init() {
+            // 視覚的なフィードバックのために少し待機
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // 1. トークンの取得と検証
+            const token = localStorage.getItem('token');
+            const isValid = await verifyToken(token);
+
+            if (isValid) {
+                // ポップアップの場合
+                if (isPopupParam === "1") {
+                    if (window.opener) {
+                        window.opener.postMessage("Login-Success", "*");
+                    }
+                    window.close();
+                    return;
+                }
+
+                // モバイルの場合
+                if (isMobile()) {
+                    window.location.href = './open-app';
+                    return;
+                }
+
+                // デフォルトのリダイレクト（PC版メイン画面）
+                window.location.href = '/statics/';
+                return;
+            } else {
+                // 無効なトークンは削除
+                if (token) localStorage.removeItem('token');
+            }
+
+            // 2. 認証情報の整合性が確認できない場合はログイン画面を表示
+            showLogin();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
