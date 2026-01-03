@@ -57,7 +57,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 初期状態は全て非表示 */
         #loading, #login-content, #open-app-content { display: none; }
         
         .btn {
@@ -70,24 +69,26 @@
             font-weight: bold;
             margin-top: 1rem;
         }
+        p { color: #606770; line-height: 1.5; }
     </style>
 </head>
 <body>
-    <!-- 状態1：確認中 -->
+    <!-- 状態1：確認中および自動起動試行中 -->
     <div id="loading" class="status-container">
         <div class="spinner"></div>
-        <p>確認中...</p>
+        <p>ログイン情報を確認しています...</p>
     </div>
 
-    <!-- 状態2：アプリ起動画面（モバイル用） -->
+    <!-- 状態2：手動起動画面（スピナーなし） -->
     <div id="open-app-content" class="container">
-        <div class="spinner"></div>
-        <h1>アプリを起動しています</h1>
-        <p>自動的に切り替わらない場合は、下のボタンをクリックしてください。</p>
+        <h1>アプリは起動しましたか？</h1>
+        <p>自動的に切り替わらない場合は、下のボタンをクリックしてアプリを開いてください。</p>
         <a id="app-link" href="#" class="btn">アプリを開く</a>
+        <br><br>
+        <a href="javascript:location.reload()" style="font-size: 0.9rem; color: #007bff; text-decoration: none;">もう一度試す</a>
     </div>
 
-    <!-- 状態3：ログイン画面（未ログイン/PC用） -->
+    <!-- 状態3：ログイン画面 -->
     <div id="login-content" class="container">
         <h1>AuthBase ログイン</h1>
         <div class="oauth-buttons">
@@ -144,27 +145,11 @@
             }
         }
 
-        async function showOpenApp(token) {
-            hideAll();
-            // 確認中スピナーが消えた後、少し間を置いてから表示
-            await new Promise(r => setTimeout(r, 300));
-            
-            elOpenApp.style.display = 'block';
-            
-            const url = customScheme + "://?token=" + token;
-            document.getElementById('app-link').href = url;
-            
-            // アプリ起動試行
-            setTimeout(() => {
-                window.location.href = url;
-            }, 1000);
-        }
-
         async function init() {
-            // 最初に「確認中」を表示
             elLoading.style.display = 'flex';
             
-            await new Promise(resolve => setTimeout(resolve, 800));
+            // 検証前に少し待機（視覚的安定性のため）
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             const token = localStorage.getItem('token');
             const isValid = await verifyToken(token);
@@ -179,7 +164,18 @@
                 }
 
                 if (isMobile()) {
-                    await showOpenApp(token);
+                    const url = customScheme + "://?token=" + token;
+                    document.getElementById('app-link').href = url;
+                    
+                    // スピナーが出ている状態でアプリ起動を試行
+                    window.location.href = url;
+                    
+                    // アプリが起動してバックグラウンドに回らなかった場合（＝起動失敗）に備えて
+                    // 1.5秒後に手動起動画面に切り替える
+                    setTimeout(() => {
+                        hideAll();
+                        elOpenApp.style.display = 'block';
+                    }, 1500);
                     return;
                 }
 
