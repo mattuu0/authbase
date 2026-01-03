@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - AuthBase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { margin-bottom: 2rem; color: #1c1e21; font-size: 1.5rem; }
+        .oauth-button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #4b4f56;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .oauth-button:hover { background-color: #f5f6f7; }
+        
+        .status-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #loading, #login-content, #open-app-content { display: none; }
+        
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        p { color: #606770; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <!-- 状態1：確認中および自動起動試行中 -->
+    <div id="loading" class="status-container">
+        <div class="spinner"></div>
+        <p>ログイン情報を確認しています...</p>
+    </div>
+
+    <!-- 状態2：手動起動画面（スピナーなし） -->
+    <div id="open-app-content" class="container">
+        <h1>アプリは起動しましたか？</h1>
+        <p>自動的に切り替わらない場合は、下のボタンをクリックしてアプリを開いてください。</p>
+        <a id="app-link" href="#" class="btn">アプリを開く</a>
+        <br><br>
+        <a href="javascript:location.reload()" style="font-size: 0.9rem; color: #007bff; text-decoration: none;">もう一度試す</a>
+    </div>
+
+    <!-- 状態3：ログイン画面 -->
+    <div id="login-content" class="container">
+        <h1>AuthBase ログイン</h1>
+        <div class="oauth-buttons">
+            <a href="./oauth/google" class="oauth-button">Googleでログイン</a>
+            <a href="./oauth/github" class="oauth-button">GitHubでログイン</a>
+            <a href="./oauth/discord" class="oauth-button">Discordでログイン</a>
+            <a href="./oauth/microsoftonline" class="oauth-button">Microsoftでログイン</a>
+        </div>
+    </div>
+
+    <script>
+        const isPopupParam = "{{.IsPopup}}";
+        const isMobileParam = "{{.IsMobile}}";
+        const customScheme = "{{.CustomScheme}}";
+
+        const elLoading = document.getElementById('loading');
+        const elLogin = document.getElementById('login-content');
+        const elOpenApp = document.getElementById('open-app-content');
+
+        function hideAll() {
+            elLoading.style.display = 'none';
+            elLogin.style.display = 'none';
+            elOpenApp.style.display = 'none';
+        }
+
+        function isMobile() {
+            return isMobileParam === "1";
+        }
+
+        async function verifyToken(token) {
+            if (!token) return false;
+            try {
+                const response = await fetch('./me', {
+                    headers: { 'Authorization': token }
+                });
+                return response.ok;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function showLogin() {
+            hideAll();
+            elLogin.style.display = 'block';
+            
+            if (isMobile()) {
+                const links = document.querySelectorAll('.oauth-button');
+                links.forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && href.includes('/oauth/')) {
+                        link.href = href + (href.includes('?') ? '&' : '?') + 'ismobile=1';
+                    }
+                });
+            }
+        }
+
+        async function init() {
+            elLoading.style.display = 'flex';
+            
+            // 検証前に少し待機（視覚的安定性のため）
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const token = localStorage.getItem('token');
+            const isValid = await verifyToken(token);
+
+            if (isValid) {
+                if (isPopupParam === "1") {
+                    if (window.opener) {
+                        window.opener.postMessage("Login-Success", "*");
+                    }
+                    window.close();
+                    return;
+                }
+
+                if (isMobile()) {
+                    const url = customScheme + "://?token=" + token;
+                    document.getElementById('app-link').href = url;
+                    
+                    // スピナーが出ている状態でアプリ起動を試行
+                    window.location.href = url;
+                    
+                    // アプリが起動してバックグラウンドに回らなかった場合（＝起動失敗）に備えて
+                    // 1.5秒後に手動起動画面に切り替える
+                    setTimeout(() => {
+                        hideAll();
+                        elOpenApp.style.display = 'block';
+                    }, 1500);
+                    return;
+                }
+
+                hideAll();
+                window.location.href = '/statics/';
+                return;
+            } else {
+                if (token) localStorage.removeItem('token');
+            }
+
+            showLogin();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
