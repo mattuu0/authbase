@@ -38,7 +38,7 @@
         }
         .oauth-button:hover { background-color: #f5f6f7; }
         
-        #loading {
+        #loading, #open-app-content {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -56,15 +56,34 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        #login-content { display: none; }
+        #login-content, #open-app-content { display: none; }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
     <div id="loading">
         <div class="spinner"></div>
-        <p>確認中...</p>
+        <p id="loading-text">確認中...</p>
     </div>
 
+    <!-- モバイル用：アプリ起動画面 -->
+    <div id="open-app-content" class="container">
+        <div class="spinner"></div>
+        <h1>アプリを起動しています</h1>
+        <p>自動的に切り替わらない場合は、下のボタンをクリックしてください。</p>
+        <a id="app-link" href="#" class="btn">アプリを開く</a>
+    </div>
+
+    <!-- PC用・未ログイン時：ログイン画面 -->
     <div id="login-content" class="container">
         <h1>AuthBase ログイン</h1>
         <div class="oauth-buttons">
@@ -78,9 +97,9 @@
     <script>
         const isPopupParam = "{{.IsPopup}}";
         const isMobileParam = "{{.IsMobile}}";
+        const customScheme = "{{.CustomScheme}}";
 
         function isMobile() {
-            // クエリパラメータからのみ判定（UA判定は削除）
             return isMobileParam === "1";
         }
 
@@ -98,9 +117,9 @@
 
         function showLogin() {
             document.getElementById('loading').style.display = 'none';
+            document.getElementById('open-app-content').style.display = 'none';
             document.getElementById('login-content').style.display = 'block';
             
-            // モバイルの場合はリンクを更新
             if (isMobile()) {
                 const links = document.querySelectorAll('.oauth-button');
                 links.forEach(link => {
@@ -112,16 +131,27 @@
             }
         }
 
+        function showOpenApp(token) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('login-content').style.display = 'none';
+            document.getElementById('open-app-content').style.display = 'block';
+            
+            const url = customScheme + "://?token=" + token;
+            document.getElementById('app-link').href = url;
+            
+            // 自動起動試行
+            setTimeout(() => {
+                window.location.href = url;
+            }, 800);
+        }
+
         async function init() {
-            // 視覚的なフィードバックのために少し待機
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            // 1. トークンの取得と検証
             const token = localStorage.getItem('token');
             const isValid = await verifyToken(token);
 
             if (isValid) {
-                // ポップアップの場合
                 if (isPopupParam === "1") {
                     if (window.opener) {
                         window.opener.postMessage("Login-Success", "*");
@@ -130,21 +160,17 @@
                     return;
                 }
 
-                // モバイルの場合
                 if (isMobile()) {
-                    window.location.href = './open-app';
+                    showOpenApp(token);
                     return;
                 }
 
-                // デフォルトのリダイレクト（PC版メイン画面）
                 window.location.href = '/statics/';
                 return;
             } else {
-                // 無効なトークンは削除
                 if (token) localStorage.removeItem('token');
             }
 
-            // 2. 認証情報の整合性が確認できない場合はログイン画面を表示
             showLogin();
         }
 

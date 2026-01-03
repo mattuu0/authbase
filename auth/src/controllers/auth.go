@@ -62,40 +62,24 @@ func LoginPage(ctx echo.Context) error {
 
 
 
-		"IsPopup":  isPopup,
+		"IsPopup":      isPopup,
 
 
 
-		"IsMobile": isMobile,
+		"IsMobile":     isMobile,
 
 
-
-	})
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-func OpenAppPage(ctx echo.Context) error {
-
-	return ctx.Render(http.StatusOK, "open-app.html", map[string]interface{}{
 
 		"CustomScheme": CUSTOM_SCHEME,
 
+
+
 	})
 
+
+
 }
+
+
+
+

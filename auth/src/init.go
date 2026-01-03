@@ -75,7 +75,6 @@ func SetupRouter(router *echo.Echo) {
 
 	// ログイン
 	router.GET("/login", controllers.LoginPage)
-	router.GET("/open-app", controllers.OpenAppPage)
 
 	// info エンドポイント
 	router.GET("/info/:userid", controllers.GetInfo)
