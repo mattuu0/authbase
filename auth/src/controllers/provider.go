@@ -37,6 +37,20 @@ func UpdateProviders(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK,echo.Map{"message": "success"})
 }
 
+// 公開用：有効なOauth プロバイダ一覧を取得
+func GetPublicProviders(ctx echo.Context) error {
+	providers := services.GetOauthProviders()
+	
+	enabledProviders := []string{}
+	for _, p := range providers {
+		if p.IsEnabled == 1 {
+			enabledProviders = append(enabledProviders, p.ProviderCode)
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, enabledProviders)
+}
+
 // Oauth プロバイダを取得
 func GetOauthProviders(ctx echo.Context) error {
 	// サービスから取得
