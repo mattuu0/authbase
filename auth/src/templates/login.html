@@ -223,12 +223,22 @@
                 if (isMobile()) {
                     const url = customScheme + "://?token=" + token;
                     document.getElementById('app-link').href = url;
-                    window.location.href = url;
-                    
-                    setTimeout(() => {
+
+                    // ログイン直後（sessionStorageにフラグがある）の場合は自動起動しない
+                    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+                    if (justLoggedIn) {
+                        sessionStorage.removeItem('justLoggedIn');
+                        // 自動起動はせず、手動起動画面を表示する
                         hideAll();
                         elOpenApp.classList.remove('hidden');
-                    }, 1500);
+                    } else {
+                        // すでにログイン済みで再訪問した場合は自動起動を試行
+                        window.location.href = url;
+                        setTimeout(() => {
+                            hideAll();
+                            elOpenApp.classList.remove('hidden');
+                        }, 1500);
+                    }
                     return;
                 }
 

@@ -43,6 +43,8 @@
 
         if (token) {
             localStorage.setItem('token', token);
+            // ログイン直後であることを記録（自動起動を抑制するため）
+            sessionStorage.setItem('justLoggedIn', 'true');
         }
 
         setTimeout(function() {
