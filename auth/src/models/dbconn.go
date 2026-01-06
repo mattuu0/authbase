@@ -107,3 +107,11 @@ func Init() error {
 func GetDB() *gorm.DB {
 	return dbconn
 }
+
+func SetDB(db *gorm.DB) {
+	dbconn = db
+}
+
+func ReplaceDB(db *gorm.DB) {
+	dbconn = db
+}
