@@ -13,6 +13,18 @@ import (
 	"gorm.io/gorm"
 )
 
+// LogStep prints a formatted step message to the test log
+func LogStep(t *testing.T, msg string) {
+	t.Helper()
+	t.Logf("\n🔹 %s ...\n", msg)
+}
+
+// LogSuccess prints a formatted success message
+func LogSuccess(t *testing.T, msg string) {
+	t.Helper()
+	t.Logf("✅ %s\n", msg)
+}
+
 // TestDB はテスト用のデータベース接続を保持します
 var TestDB *gorm.DB
 
@@ -20,6 +32,8 @@ var TestDB *gorm.DB
 // 各テストの開始時に呼び出されることを想定しています
 func SetupTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
+
+	LogStep(t, "Initializing Test Database (In-Memory)")
 
 	// SQLiteデータベースを作成 (インメモリ)
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
@@ -41,12 +55,16 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 
 	models.SetDB(db)
 	TestDB = db
+	
+	LogSuccess(t, "Test Database initialized")
 	return db
 }
 
 // CleanupTestDB はテスト用データベースをクリーンアップします
 func CleanupTestDB(t *testing.T, db *gorm.DB) {
 	t.Helper()
+	
+	LogStep(t, "Cleaning up Test Database")
 
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -57,6 +75,8 @@ func CleanupTestDB(t *testing.T, db *gorm.DB) {
 	if err := sqlDB.Close(); err != nil {
 		t.Logf("Failed to close database: %v", err)
 	}
+	
+	LogSuccess(t, "Test Database cleaned up")
 }
 
 // SetupTestEnv はテスト用の環境変数をセットアップします

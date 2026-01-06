@@ -1,0 +1,36 @@
+Running all tests...
+?   	auth	[no test files]
+?   	auth/cmd	[no test files]
+?   	auth/cmd/summary	[no test files]
+?   	auth/controllers	[no test files]
+?   	auth/grpckit	[no test files]
+
+
+╔══════════════════════════════════════════════════════════════╗
+`║                      TEST EXECUTION SUMMARY                  ║`
+`╠══════════════════════════════════════════════╦═══════════════╣`
+`║ Test Name                                    ║ Status        ║`
+`╠══════════════════════════════════════════════╬═══════════════╣`
+║ TestCreateUser/valid_user_creation           ║ ✅ SUCCESS     ║
+║ TestCreateUser/duplicate_email               ║ ✅ SUCCESS     ║
+║ TestCreateUser                               ║ ✅ SUCCESS     ║
+║ TestUserLabelManagement/add_label_to_user    ║ ✅ SUCCESS     ║
+║ TestUserLabelManagement/remove_label_from... ║ ✅ SUCCESS     ║
+║ TestUserLabelManagement/get_label_names      ║ ✅ SUCCESS     ║
+║ TestUserLabelManagement                      ║ ✅ SUCCESS     ║
+║ TestGetUser/existing_user                    ║ ✅ SUCCESS     ║
+║ TestGetUser/non-existing_user                ║ ✅ SUCCESS     ║
+║ TestGetUser                                  ║ ✅ SUCCESS     ║
+║ TestGetUserByEmail/existing_email            ║ ✅ SUCCESS     ║
+║ TestGetUserByEmail/non-existing_email        ║ ✅ SUCCESS     ║
+║ TestGetUserByEmail                           ║ ✅ SUCCESS     ║
+║ TestSearchUser/search_by_name                ║ ✅ SUCCESS     ║
+║ TestSearchUser/search_by_email               ║ ✅ SUCCESS     ║
+║ TestSearchUser/search_with_no_results        ║ ✅ SUCCESS     ║
+║ TestSearchUser                               ║ ✅ SUCCESS     ║
+║ TestUpdateUser/update_user_name              ║ ✅ SUCCESS     ║
+║ TestUpdateUser                               ║ ✅ SUCCESS     ║
+║ TestDeleteUser/delete_existing_user          ║ ✅ SUCCESS     ║
+║ TestDeleteUser/delete_non-existing_user      ║ ✅ SUCCESS     ║
+║ TestDeleteUser                               ║ ✅ SUCCESS     ║
+`╚══════════════════════════════════════════════╩═══════════════╝`
