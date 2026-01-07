@@ -25,6 +25,16 @@ export interface Provider {
   IsEnabled: number;
 }
 
+export interface Session {
+  id: string;
+  userId: string;
+  ipAddress: string;
+  userAgent: string;
+  createdAt: string;
+  expiresAt: string;
+  isActive: boolean;
+}
+
 export interface CreateUserRequest {
   id?: string;
   name: string;

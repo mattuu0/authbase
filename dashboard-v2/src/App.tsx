@@ -3,6 +3,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import UsersPage from "./pages/UsersPage";
 import LabelsPage from "./pages/LabelsPage";
 import ProvidersPage from "./pages/ProvidersPage";
+import SessionsPage from "./pages/SessionsPage";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="labels" element={<LabelsPage />} />
           <Route path="providers" element={<ProvidersPage />} />
-          <Route path="sessions" element={<div>Sessions Page (Coming Soon)</div>} />
+          <Route path="sessions" element={<SessionsPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard/users" replace />} />
         <Route path="*" element={<div>404 Not Found</div>} />
