@@ -10,15 +10,16 @@ import {
   Shield,
   ShieldAlert
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import type { User } from "../lib/types";
 import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
 import { cn } from "../lib/utils";
+import { UserEditModal } from "../components/UserEditModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -155,13 +156,13 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <Link
-                          to={`/dashboard/users/${user.id}/edit`}
+                        <button
+                          onClick={() => setEditingUser(user)}
                           className="rounded-md p-2 text-blue-600 hover:bg-blue-50 transition-colors"
                           title="編集"
                         >
                           <Edit2 className="h-4 w-4" />
-                        </Link>
+                        </button>
                         <button
                           onClick={() => handleToggleBan(user.id)}
                           className={cn(
@@ -188,6 +189,15 @@ export default function UsersPage() {
           </table>
         </div>
       </div>
+
+      <UserEditModal
+        user={editingUser}
+        isOpen={!!editingUser}
+        onClose={() => setEditingUser(null)}
+        onUpdate={(updated) => {
+          setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
+        }}
+      />
     </div>
   );
 }
