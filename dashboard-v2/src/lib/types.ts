@@ -10,6 +10,13 @@ export interface User {
   banned: boolean;
 }
 
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+}
+
 export interface CreateUserRequest {
   id?: string;
   name: string;
