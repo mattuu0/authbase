@@ -11,6 +11,8 @@ import (
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
+
+	glog "gorm.io/gorm/logger"
 )
 
 // LogStep prints a formatted step message to the test log
@@ -36,7 +38,9 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 	LogStep(t, "Initializing Test Database (In-Memory)")
 
 	// SQLiteデータベースを作成 (インメモリ)
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		Logger: glog.Default.LogMode(glog.Silent),
+	})
 	if err != nil {
 		t.Fatalf("Failed to connect to test database: %v", err)
 	}

@@ -1,75 +1,122 @@
+// user_create_test.go - ユーザー作成に関するテスト
 package models_test
 
 import (
 	"auth/models"
-	"testing"
-
 	testtool "auth/testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+	"fmt"
+	"testing"
 )
 
-// TestCreateUser tests the creation of a new user
-func TestCreateUser(t *testing.T) {
-	testtool.RecordResult(t)
+// TestCreateUser_Success tests successful user creation
+func TestCreateUser_Success(t *testing.T) {
 	db := testtool.SetupTestDB(t)
 	defer testtool.CleanupTestDB(t, db)
+	
+	log := testtool.NewTestLogger(t, "CreateUser - Success Case")
+	defer log.Finish()
 
-	models.ReplaceDB(db)
-
-	testtool.LogStep(t, "Creating Test Provider (Google)")
+	// プロバイダーを作成
+	log.LogStep("Creating test provider")
 	testtool.CreateTestProvider(t, db, models.Google)
 
-	t.Run("valid user creation", func(t *testing.T) {
-		testtool.RecordResult(t)
-		testtool.LogStep(t, "Attempting to create a valid user")
+	log.LogStep("Creating new user")
+	user := &models.User{
+		UserID:   "test-user-success",
+		Name:     "Success User",
+		Email:    "success@example.com",
+		ProvCode: models.Google,
+		ProvUID:  "google-success-123",
+	}
+
+	err := models.CreateUser(user, models.Google)
+	log.AssertNoError(err, "User creation")
+
+	log.LogStep("Verifying user was created")
+	retrieved, result := models.GetUser(user.UserID)
+	log.AssertNoError(result.Error, "User retrieval")
+	log.AssertTrue(result.IsExists, "User exists check")
+	log.AssertEqual(user.Email, retrieved.Email, "Email match")
+	log.AssertEqual(user.Name, retrieved.Name, "Name match")
+}
+
+// TestCreateUser_DuplicateEmail tests duplicate email handling
+func TestCreateUser_DuplicateEmail(t *testing.T) {
+	db := testtool.SetupTestDB(t)
+	defer testtool.CleanupTestDB(t, db)
+	
+	log := testtool.NewTestLogger(t, "CreateUser - Duplicate Email")
+	defer log.Finish()
+
+	testtool.CreateTestProvider(t, db, models.Google)
+
+	log.LogStep("Creating first user")
+	user1 := &models.User{
+		UserID:   "test-user-1",
+		Name:     "User One",
+		Email:    "duplicate@example.com",
+		ProvCode: models.Google,
+		ProvUID:  "uid-1",
+	}
+
+	err := models.CreateUser(user1, models.Google)
+	log.AssertNoError(err, "First user creation")
+
+	log.LogStep("Attempting to create second user with same email")
+	user2 := &models.User{
+		UserID:   "test-user-2",
+		Name:     "User Two",
+		Email:    "duplicate@example.com",
+		ProvCode: models.Google,
+		ProvUID:  "uid-2",
+	}
+
+	err = models.CreateUser(user2, models.Google)
+	if err == nil {
+		log.LogError("Expected error for duplicate email, but got none")
+		t.Fatal("Should fail with duplicate email")
+	} else {
+		log.LogSuccess("Correctly rejected duplicate email")
+	}
+}
+
+// TestCreateUser_EmptyFields tests validation of required fields
+func TestCreateUser_EmptyFields(t *testing.T) {
+	db := testtool.SetupTestDB(t)
+	defer testtool.CleanupTestDB(t, db)
+	
+	log := testtool.NewTestLogger(t, "CreateUser - Empty Fields")
+	defer log.Finish()
+
+	testtool.CreateTestProvider(t, db, models.Google)
+
+	testCases := []struct {
+		name      string
+		userID    string
+		email     string
+		shouldErr bool
+	}{
+		{"Empty UserID", "", "test@example.com", false},
+		{"Empty Email", "user-id", "", false},
+		{"Valid Data", "valid-id", "valid@example.com", false},
+	}
+
+	for _, tc := range testCases {
+		log.LogStep(fmt.Sprintf("Testing: %s", tc.name))
+		
 		user := &models.User{
-			UserID:   "test-user-1",
+			UserID:   tc.userID,
 			Name:     "Test User",
-			Email:    "test@example.com",
+			Email:    tc.email,
 			ProvCode: models.Google,
-			ProvUID:  "google-uid-123",
+			ProvUID:  "test-uid",
 		}
 
 		err := models.CreateUser(user, models.Google)
-		require.NoError(t, err)
-
-		// ユーザーが作成されたことを確認
-		retrieved, result := models.GetUser(user.UserID)
-		require.NoError(t, result.Error)
-		assert.True(t, result.IsExists)
-		assert.Equal(t, user.Email, retrieved.Email)
-		assert.Equal(t, user.Name, retrieved.Name)
-		testtool.LogSuccess(t, "User created and retrieved successfully")
-	})
-
-	t.Run("duplicate email", func(t *testing.T) {
-		testtool.RecordResult(t)
-		testtool.LogStep(t, "Attempting to create users with duplicate email")
-		user1 := &models.User{
-			UserID:   "test-user-2",
-			Name:     "User 1",
-			Email:    "duplicate@example.com",
-			ProvCode: models.Google,
-			ProvUID:  "uid-1",
+		if tc.shouldErr {
+			log.AssertTrue(err != nil, fmt.Sprintf("%s should error", tc.name))
+		} else {
+			log.LogInfo(fmt.Sprintf("%s result: %v", tc.name, err))
 		}
-
-		user2 := &models.User{
-			UserID:   "test-user-3",
-			Name:     "User 2",
-			Email:    "duplicate@example.com",
-			ProvCode: models.Google,
-			ProvUID:  "uid-2",
-		}
-
-		err := models.CreateUser(user1, models.Google)
-		require.NoError(t, err)
-		testtool.LogSuccess(t, "First user created")
-
-		// 同じメールアドレスで2人目を作成しようとする
-		err = models.CreateUser(user2, models.Google)
-		assert.Error(t, err, "Should fail with duplicate email")
-		testtool.LogSuccess(t, "Duplicate email check passed (creation failed as expected)")
-	})
+	}
 }
