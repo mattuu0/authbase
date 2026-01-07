@@ -150,11 +150,11 @@ func LoginBasicUser(args LoginBasicUserArgs) (string,structs.HttpResult) {
 	user, result := models.GetUserByEmail(args.Email)
 
 	// エラー処理
-	if result.Error != nil {
-		return "",structs.HttpResult{
-			Code: http.StatusInternalServerError,
-			Message: "failed to get user",
-			Error:   err,
+	if !result.IsExists || result.Error != nil {
+		return "", structs.HttpResult{
+			Code:    http.StatusBadRequest,
+			Message: "invalid email or password",
+			Error:   result.Error,
 			Success: false,
 		}
 	}
