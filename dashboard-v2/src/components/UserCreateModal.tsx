@@ -69,6 +69,25 @@ export function UserCreateModal({ isOpen, onClose, onCreated }: UserCreateModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 基本的なバリデーション
+    if (!formData.name.trim()) {
+      setError("氏名を入力してください。");
+      return;
+    }
+    if (!formData.email.trim()) {
+      setError("メールアドレスを入力してください。");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("有効なメールアドレスを入力してください。");
+      return;
+    }
+    if (formData.password.length < 8) {
+      setError("パスワードは8文字以上で入力してください。");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
@@ -99,11 +118,12 @@ export function UserCreateModal({ isOpen, onClose, onCreated }: UserCreateModalP
       description="新しいユーザーを作成します"
       footer={
         <div className="flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1">
+          <Button variant="outline" onClick={onClose} className="flex-1" type="button">
             キャンセル
           </Button>
           <Button 
-            onClick={handleSubmit} 
+            form="user-create-form"
+            type="submit"
             isLoading={isSubmitting} 
             className="flex-[2]"
           >
@@ -113,7 +133,7 @@ export function UserCreateModal({ isOpen, onClose, onCreated }: UserCreateModalP
         </div>
       }
     >
-      <div className="space-y-5">
+      <form id="user-create-form" onSubmit={handleSubmit} className="space-y-5">
         {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{error}</div>}
         
         <div className="flex flex-col items-center gap-3">
@@ -200,7 +220,7 @@ export function UserCreateModal({ isOpen, onClose, onCreated }: UserCreateModalP
             </div>
           </div>
         </div>
-      </div>
+      </form>
     </BaseModal>
   );
 }
