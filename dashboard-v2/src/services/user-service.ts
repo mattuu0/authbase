@@ -78,6 +78,23 @@ export async function searchUsers(query: string): Promise<User[]> {
   );
 }
 
+export async function createUser(data: CreateUserRequest): Promise<User> {
+  await new Promise((resolve) => setTimeout(resolve, 800));
+  const newUser: User = {
+    id: `usr_${Math.random().toString(36).substring(2, 9)}`,
+    name: data.name,
+    email: data.email,
+    provider: data.provider || "basic",
+    providerId: data.providerId || data.email,
+    avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
+    labels: data.labels || [],
+    createdAt: new Date().toISOString().split("T")[0],
+    banned: false,
+  };
+  mockUsers.unshift(newUser);
+  return newUser;
+}
+
 export async function deleteUser(userId: string): Promise<void> {
   const index = mockUsers.findIndex((u) => u.id === userId);
   if (index !== -1) {

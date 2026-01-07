@@ -15,6 +15,7 @@ import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
 import { cn } from "../lib/utils";
 import { UserEditModal } from "../components/UserEditModal";
 import { UserDeleteModal } from "../components/UserDeleteModal";
+import { UserCreateModal } from "../components/UserCreateModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -22,6 +23,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -67,7 +69,10 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">ユーザー管理</h2>
-        <button className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
+        <button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+        >
           ユーザーを追加
         </button>
       </div>
@@ -213,6 +218,14 @@ export default function UsersPage() {
         isOpen={!!deletingUser}
         onClose={() => setDeletingUser(null)}
         onConfirm={() => confirmDelete(deletingUser!.id)}
+      />
+
+      <UserCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={(newUser) => {
+          setUsers([newUser, ...users]);
+        }}
       />
     </div>
   );
