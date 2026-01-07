@@ -1,4 +1,15 @@
-import { User, CreateUserRequest } from "../lib/types";
+import { User } from "../lib/types";
+
+export interface CreateUserRequest {
+  id?: string;
+  name: string;
+  email: string;
+  password: string;
+  provider: string;
+  providerId: string;
+  avatar: string;
+  labels: string[];
+}
 
 const mockUsers: User[] = [
   {
