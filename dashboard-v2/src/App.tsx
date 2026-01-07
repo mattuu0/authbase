@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import UsersPage from "./pages/UsersPage";
 import LabelsPage from "./pages/LabelsPage";
+import ProvidersPage from "./pages/ProvidersPage";
 
 function App() {
   return (
@@ -11,7 +12,7 @@ function App() {
           <Route index element={<Navigate to="/dashboard/users" replace />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="labels" element={<LabelsPage />} />
-          <Route path="providers" element={<div>Providers Page (Coming Soon)</div>} />
+          <Route path="providers" element={<ProvidersPage />} />
           <Route path="sessions" element={<div>Sessions Page (Coming Soon)</div>} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard/users" replace />} />

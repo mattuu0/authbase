@@ -17,6 +17,14 @@ export interface Label {
   createdAt: string;
 }
 
+export interface Provider {
+  ProviderCode: string;
+  ClientID: string;
+  ClientSecret: string;
+  CallbackURL: string;
+  IsEnabled: number;
+}
+
 export interface CreateUserRequest {
   id?: string;
   name: string;
