@@ -3,12 +3,14 @@ import { Plus, Trash2, Tag, Search } from "lucide-react";
 import type { Label } from "../lib/types";
 import { getLabels, deleteLabel } from "../services/label-service";
 import { LabelCreateModal } from "../components/LabelCreateModal";
+import { LabelDeleteModal } from "../components/LabelDeleteModal";
 
 export default function LabelsPage() {
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [deletingLabel, setDeletingLabel] = useState<Label | null>(null);
 
   useEffect(() => {
     fetchLabels();
@@ -27,12 +29,12 @@ export default function LabelsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("このラベルを削除してもよろしいですか？")) return;
     try {
       await deleteLabel(id);
       setLabels(labels.filter((l) => l.id !== id));
     } catch (error) {
       console.error("Failed to delete label:", error);
+      throw error;
     }
   };
 
@@ -88,7 +90,7 @@ export default function LabelsPage() {
                 </div>
               </div>
               <button
-                onClick={() => handleDelete(label.id)}
+                onClick={() => setDeletingLabel(label)}
                 className="rounded-md p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
                 title="削除"
               >
@@ -106,6 +108,13 @@ export default function LabelsPage() {
         onCreated={(newLabel) => {
           setLabels([newLabel, ...labels]);
         }}
+      />
+
+      <LabelDeleteModal
+        label={deletingLabel}
+        isOpen={!!deletingLabel}
+        onClose={() => setDeletingLabel(null)}
+        onConfirm={() => handleDelete(deletingLabel!.id)}
       />
     </div>
   );
