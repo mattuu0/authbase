@@ -38,7 +38,7 @@ func CreateBasicUser(ctx echo.Context) error {
 	// エラー処理
 	if result.Error != nil {
 		logger.PrintErr(result.Error)
-		return ctx.JSON(result.Code, echo.Map{"error": result.Error.Error()})
+		return ctx.JSON(result.Code, echo.Map{"error": result.Message})
 	}
 
 	return ctx.JSON(result.Code, echo.Map{"token": token})
@@ -72,7 +72,7 @@ func LoginBasicUser(ctx echo.Context) error {
 	// エラー処理
 	if result.Error != nil {
 		logger.PrintErr(result.Error)
-		return ctx.JSON(result.Code, echo.Map{"error": result.Error.Error()})
+		return ctx.JSON(result.Code, echo.Map{"error": result.Message})
 	}
 
 	return ctx.JSON(result.Code, echo.Map{"token": token})

@@ -175,7 +175,7 @@ func LoginBasicUser(args LoginBasicUserArgs) (string,structs.HttpResult) {
 		// パスワードが一致しない場合はエラーを返す
 		return "",structs.HttpResult{
 			Code: http.StatusBadRequest,
-			Message: "invalid password",
+			Message: "invalid email or password",
 			Error:   errors.New("invalid password"),
 			Success: false,
 		}
