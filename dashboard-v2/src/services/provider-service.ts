@@ -22,6 +22,20 @@ const mockProviders: Provider[] = [
     CallbackURL: "http://localhost:3000/auth/callback/discord",
     IsEnabled: 0,
   },
+  {
+    ProviderCode: "microsoft",
+    ClientID: "",
+    ClientSecret: "",
+    CallbackURL: "http://localhost:3000/auth/callback/microsoft",
+    IsEnabled: 0,
+  },
+  {
+    ProviderCode: "basic",
+    ClientID: "N/A",
+    ClientSecret: "N/A",
+    CallbackURL: "N/A",
+    IsEnabled: 1,
+  },
 ];
 
 export async function getProviders(): Promise<Provider[]> {

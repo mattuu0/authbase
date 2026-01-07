@@ -59,8 +59,12 @@ export default function ProvidersPage() {
                     <Settings className="h-6 w-6 text-gray-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold capitalize text-gray-900">{provider.ProviderCode}</h3>
-                    <p className="text-sm text-gray-500">OAuth2認証プロバイダ</p>
+                    <h3 className="text-lg font-bold capitalize text-gray-900">
+                      {provider.ProviderCode === "basic" ? "Basic" : provider.ProviderCode}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {provider.ProviderCode === "basic" ? "ID/パスワード認証" : "OAuth2認証プロバイダ"}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -79,44 +83,48 @@ export default function ProvidersPage() {
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
-                    <Key className="h-3 w-3" />
-                    Client ID
-                  </label>
-                  <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700 break-all">
-                    {provider.ClientID || "未設定"}
+              {provider.ProviderCode !== "basic" && (
+                <>
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
+                        <Key className="h-3 w-3" />
+                        Client ID
+                      </label>
+                      <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700 break-all">
+                        {provider.ClientID || "未設定"}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
+                        <Shield className="h-3 w-3" />
+                        Client Secret
+                      </label>
+                      <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700">
+                        {provider.ClientSecret ? "••••••••••••••••" : "未設定"}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
+                        <Globe className="h-3 w-3" />
+                        Callback URL
+                      </label>
+                      <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700 break-all">
+                        {provider.CallbackURL}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
-                    <Shield className="h-3 w-3" />
-                    Client Secret
-                  </label>
-                  <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700">
-                    {provider.ClientSecret ? "••••••••••••••••" : "未設定"}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500">
-                    <Globe className="h-3 w-3" />
-                    Callback URL
-                  </label>
-                  <div className="rounded-md bg-gray-50 px-3 py-2 text-sm font-mono text-gray-700 break-all">
-                    {provider.CallbackURL}
-                  </div>
-                </div>
-              </div>
 
-              <div className="mt-6 flex justify-end">
-                <button 
-                  onClick={() => setEditingProvider(provider)}
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors"
-                >
-                  設定を編集
-                </button>
-              </div>
+                  <div className="mt-6 flex justify-end">
+                    <button 
+                      onClick={() => setEditingProvider(provider)}
+                      className="text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors"
+                    >
+                      設定を編集
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))
         )}
