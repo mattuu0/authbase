@@ -3,10 +3,12 @@ import { Settings, Shield, ShieldOff, Key, Globe, Check } from "lucide-react";
 import type { Provider } from "../lib/types";
 import { getProviders, toggleProvider } from "../services/provider-service";
 import { cn } from "../lib/utils";
+import { ProviderEditModal } from "../components/ProviderEditModal";
 
 export default function ProvidersPage() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
   useEffect(() => {
     fetchProviders();
@@ -108,7 +110,10 @@ export default function ProvidersPage() {
               </div>
 
               <div className="mt-6 flex justify-end">
-                <button className="text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors">
+                <button 
+                  onClick={() => setEditingProvider(provider)}
+                  className="text-sm font-semibold text-blue-600 hover:text-blue-500 transition-colors"
+                >
                   設定を編集
                 </button>
               </div>
@@ -116,6 +121,15 @@ export default function ProvidersPage() {
           ))
         )}
       </div>
+
+      <ProviderEditModal
+        provider={editingProvider}
+        isOpen={!!editingProvider}
+        onClose={() => setEditingProvider(null)}
+        onUpdated={(updated) => {
+          setProviders(providers.map(p => p.ProviderCode === updated.ProviderCode ? updated : p));
+        }}
+      />
     </div>
   );
 }

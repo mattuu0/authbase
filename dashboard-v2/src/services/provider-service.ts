@@ -35,3 +35,12 @@ export async function toggleProvider(code: string): Promise<Provider> {
   provider.IsEnabled = provider.IsEnabled === 1 ? 0 : 1;
   return { ...provider };
 }
+
+export async function updateProvider(code: string, updates: Partial<Provider>): Promise<Provider> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const index = mockProviders.findIndex((p) => p.ProviderCode === code);
+  if (index === -1) throw new Error("Provider not found");
+  
+  mockProviders[index] = { ...mockProviders[index], ...updates };
+  return { ...mockProviders[index] };
+}
