@@ -9,7 +9,7 @@ import {
   Shield,
   ShieldAlert
 } from "lucide-react";
-import { User } from "../lib/types";
+import type { User } from "../lib/types";
 import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
 import { cn } from "../lib/utils";
 

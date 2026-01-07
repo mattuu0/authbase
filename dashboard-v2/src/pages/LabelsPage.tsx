@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Trash2, Tag, Search } from "lucide-react";
-import { Label } from "../lib/types";
+import type { Label } from "../lib/types";
 import { getLabels, deleteLabel } from "../services/label-service";
 
 export default function LabelsPage() {

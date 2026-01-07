@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Settings, Shield, ShieldOff, Key, Globe, Check } from "lucide-react";
-import { Provider } from "../lib/types";
+import type { Provider } from "../lib/types";
 import { getProviders, toggleProvider } from "../services/provider-service";
 import { cn } from "../lib/utils";
 

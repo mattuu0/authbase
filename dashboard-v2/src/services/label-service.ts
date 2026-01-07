@@ -1,4 +1,4 @@
-import { Label } from "../lib/types";
+import type { Label } from "../lib/types";
 
 const mockLabels: Label[] = [
   { id: "lbl_1", name: "管理者", color: "#ef4444", createdAt: "2023-01-10" },

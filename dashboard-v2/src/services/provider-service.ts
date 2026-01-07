@@ -1,4 +1,4 @@
-import { Provider } from "../lib/types";
+import type { Provider } from "../lib/types";
 
 const mockProviders: Provider[] = [
   {

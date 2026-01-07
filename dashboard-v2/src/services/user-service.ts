@@ -1,4 +1,4 @@
-import { User } from "../lib/types";
+import { type User } from "../lib/types";
 
 export interface CreateUserRequest {
   id?: string;

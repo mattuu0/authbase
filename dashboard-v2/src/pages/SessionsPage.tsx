@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { History, Smartphone, Monitor, Trash2, Clock, MapPin } from "lucide-react";
-import { Session } from "../lib/types";
+import type { Session } from "../lib/types";
 import { getSessions, deleteSession } from "../services/session-service";
 import { cn } from "../lib/utils";
 

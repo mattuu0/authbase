@@ -1,4 +1,4 @@
-import { Session } from "../lib/types";
+import type { Session } from "../lib/types";
 
 const mockSessions: Session[] = [
   {
