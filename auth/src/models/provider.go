@@ -140,15 +140,25 @@ func InitProviders() {
 	}
 
 	// basic
-	err = CreateProvider(&Provider{
-		ProviderName: "Basic",
-		ClientID:     "",
-		ClientSecret: "",
-		CallbackURL:  "",
-		ProviderCode: Basic,
-		IsEnabled:    0,
-		Users:        []User{},
-	})
+	// プロバイダを取得してみる
+	basicProvider, err := GetProvider(Basic)
+
+	if err != nil {
+		// 取得できなかった場合は作成する
+		err = CreateProvider(&Provider{
+			ProviderName: "Basic",
+			ClientID:     "",
+			ClientSecret: "",
+			CallbackURL:  "",
+			ProviderCode: Basic,
+			IsEnabled:    1,
+			Users:        []User{},
+		})
+	} else {
+		// 取得できた場合は有効化する
+		basicProvider.IsEnabled = 1
+		err = dbconn.Save(basicProvider).Error
+	}
 
 	// エラー処理
 	if err != nil {

@@ -41,11 +41,11 @@ func SetupRouter(router *echo.Echo) {
 
 	// ルーティング設定
 	// ベーシックユーザーグループ
-	// basicg := router.Group("/basic")
-	// {
-	// 	basicg.POST("/signup", controllers.CreateBasicUser)
-	// 	basicg.POST("/login", controllers.LoginBasicUser)
-	// }
+	basicg := router.Group("/basic")
+	{
+		basicg.POST("/signup", controllers.CreateBasicUser)
+		basicg.POST("/login", controllers.LoginBasicUser)
+	}
 
 	// React のビルド出力ディレクトリを指定
 	buildDir := "dashboard"
