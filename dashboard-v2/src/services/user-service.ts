@@ -53,6 +53,21 @@ export async function getUsers(): Promise<User[]> {
   return [...mockUsers];
 }
 
+export async function getUserById(id: string): Promise<User | null> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const user = mockUsers.find((u) => u.id === id);
+  return user ? { ...user } : null;
+}
+
+export async function updateUser(id: string, data: Partial<User>): Promise<User> {
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  const index = mockUsers.findIndex((u) => u.id === id);
+  if (index === -1) throw new Error("User not found");
+  
+  mockUsers[index] = { ...mockUsers[index], ...data };
+  return { ...mockUsers[index] };
+}
+
 export async function searchUsers(query: string): Promise<User[]> {
   const lowerQuery = query.toLowerCase();
   return mockUsers.filter(

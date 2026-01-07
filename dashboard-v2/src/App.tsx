@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import UsersPage from "./pages/UsersPage";
+import UserEditPage from "./pages/UserEditPage";
 import LabelsPage from "./pages/LabelsPage";
 import ProvidersPage from "./pages/ProvidersPage";
 import SessionsPage from "./pages/SessionsPage";
@@ -14,6 +15,7 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="/dashboard/users" replace />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="users/:id/edit" element={<UserEditPage />} />
           <Route path="labels" element={<LabelsPage />} />
           <Route path="providers" element={<ProvidersPage />} />
           <Route path="sessions" element={<SessionsPage />} />

@@ -5,10 +5,12 @@ import {
   UserX, 
   UserCheck, 
   Trash2, 
+  Edit2,
   ExternalLink,
   Shield,
   ShieldAlert
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { User } from "../lib/types";
 import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
 import { cn } from "../lib/utils";
@@ -153,6 +155,13 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/dashboard/users/${user.id}/edit`}
+                          className="rounded-md p-2 text-blue-600 hover:bg-blue-50 transition-colors"
+                          title="編集"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Link>
                         <button
                           onClick={() => handleToggleBan(user.id)}
                           className={cn(
