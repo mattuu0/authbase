@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { Plus, Trash2, Tag, Search } from "lucide-react";
 import type { Label } from "../lib/types";
 import { getLabels, deleteLabel } from "../services/label-service";
+import { LabelCreateModal } from "../components/LabelCreateModal";
 
 export default function LabelsPage() {
   const [labels, setLabels] = useState<Label[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLabels();
@@ -42,7 +44,10 @@ export default function LabelsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight text-gray-900">ラベル管理</h2>
-        <button className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors">
+        <button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+        >
           <Plus className="h-4 w-4" />
           ラベルを作成
         </button>
@@ -93,6 +98,14 @@ export default function LabelsPage() {
           ))
         )}
       </div>
+
+      <LabelCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={(newLabel) => {
+          setLabels([newLabel, ...labels]);
+        }}
+      />
     </div>
   );
 }

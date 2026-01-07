@@ -18,3 +18,14 @@ export async function deleteLabel(labelId: string): Promise<void> {
     mockLabels.splice(index, 1);
   }
 }
+
+export async function createLabel(label: { name: string; color: string }): Promise<Label> {
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  const newLabel: Label = {
+    id: `lbl_${Math.random().toString(36).substr(2, 9)}`,
+    ...label,
+    createdAt: new Date().toISOString().split("T")[0],
+  };
+  mockLabels.push(newLabel);
+  return newLabel;
+}
