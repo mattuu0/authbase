@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"auth/logger"
+	"auth/models"
 	"auth/services"
 	"net/http"
 
@@ -46,6 +47,12 @@ func GetPublicProviders(ctx echo.Context) error {
 		if p.IsEnabled == 1 {
 			enabledProviders = append(enabledProviders, p.ProviderCode)
 		}
+	}
+
+	// Basic 認証が有効かどうか
+	basicProvider, err := models.GetProvider(models.Basic)
+	if err == nil && basicProvider.IsEnabled == 1 {
+		enabledProviders = append(enabledProviders, string(models.Basic))
 	}
 
 	return ctx.JSON(http.StatusOK, enabledProviders)
