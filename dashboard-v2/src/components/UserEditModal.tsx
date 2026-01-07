@@ -109,15 +109,9 @@ export function UserEditModal({ user, isOpen, onClose, onUpdate, onDelete }: Use
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("このユーザーを完全に削除しますか？この操作は取り消せません。")) return;
-    try {
-      await deleteUser(user.id);
-      onDelete(user.id);
-      onClose();
-    } catch (error) {
-      setError("削除に失敗しました");
-    }
+  const handleDelete = () => {
+    // 編集モーダルを閉じ、削除確認モーダルを開くよう親に伝える
+    onDelete(user.id);
   };
 
   return (

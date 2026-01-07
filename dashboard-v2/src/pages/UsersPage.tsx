@@ -14,12 +14,14 @@ import type { User } from "../lib/types";
 import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
 import { cn } from "../lib/utils";
 import { UserEditModal } from "../components/UserEditModal";
+import { UserDeleteModal } from "../components/UserDeleteModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -46,13 +48,13 @@ export default function UsersPage() {
     }
   };
 
-  const handleDelete = async (userId: string) => {
-    if (!confirm("このユーザーを削除してもよろしいですか？")) return;
+  const confirmDelete = async (userId: string) => {
     try {
       await deleteUser(userId);
       setUsers(users.filter(u => u.id !== userId));
     } catch (error) {
       console.error("Failed to delete user:", error);
+      throw error; // Let the modal handle error UI
     }
   };
 
@@ -174,7 +176,7 @@ export default function UsersPage() {
                           {user.banned ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
                         </button>
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => setDeletingUser(user)}
                           className="rounded-md p-2 text-red-600 hover:bg-red-50 transition-colors"
                           title="削除"
                         >
@@ -198,8 +200,19 @@ export default function UsersPage() {
           setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
         }}
         onDelete={(userId) => {
-          setUsers(users.filter((u) => u.id !== userId));
+          const userToDelete = users.find(u => u.id === userId);
+          if (userToDelete) {
+            setEditingUser(null);
+            setDeletingUser(userToDelete);
+          }
         }}
+      />
+
+      <UserDeleteModal
+        user={deletingUser}
+        isOpen={!!deletingUser}
+        onClose={() => setDeletingUser(null)}
+        onConfirm={() => confirmDelete(deletingUser!.id)}
       />
     </div>
   );
