@@ -197,6 +197,9 @@ export default function UsersPage() {
         onUpdate={(updated) => {
           setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
         }}
+        onDelete={(userId) => {
+          setUsers(users.filter((u) => u.id !== userId));
+        }}
       />
     </div>
   );
