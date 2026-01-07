@@ -102,6 +102,7 @@ export default function LabelsPage() {
       <LabelCreateModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        existingLabels={labels}
         onCreated={(newLabel) => {
           setLabels([newLabel, ...labels]);
         }}
