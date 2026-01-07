@@ -4,11 +4,13 @@ import UsersPage from "./pages/UsersPage";
 import LabelsPage from "./pages/LabelsPage";
 import ProvidersPage from "./pages/ProvidersPage";
 import SessionsPage from "./pages/SessionsPage";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="/dashboard/users" replace />} />
           <Route path="users" element={<UsersPage />} />
