@@ -79,6 +79,14 @@
             </p>
         </div>
 
+        <!-- エラーメッセージ表示エリア -->
+        <div id="error-message" class="hidden mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center space-x-3">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <p class="text-sm text-red-600 font-medium"></p>
+        </div>
+
         <div id="provider-buttons" class="space-y-3">
             <!-- Google -->
             <a href="./oauth/google" data-provider="google" class="hidden oauth-btn items-center justify-center space-x-3 w-full bg-white border border-slate-200 hover:bg-slate-50 py-3 px-4 rounded-xl transition-all duration-200 shadow-sm hover:shadow">
@@ -268,7 +276,22 @@
             }
         }
 
+        function showError(message) {
+            const elError = document.getElementById('error-message');
+            elError.querySelector('p').textContent = message;
+            elError.classList.remove('hidden');
+            elError.classList.add('flex');
+            // フォームの入力を強調するためにエラー時は少し揺らすなどのアニメーションを追加することも可能
+        }
+
+        function clearError() {
+            const elError = document.getElementById('error-message');
+            elError.classList.add('hidden');
+            elError.classList.remove('flex');
+        }
+
         function toggleSignup() {
+            clearError();
             const loginCont = document.getElementById('basic-login-container');
             const signupCont = document.getElementById('basic-signup-container');
             loginCont.classList.toggle('hidden');
@@ -277,6 +300,7 @@
 
         async function handleBasicLogin(event) {
             event.preventDefault();
+            clearError();
             const form = event.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
@@ -293,15 +317,16 @@
                     localStorage.setItem('token', result.token);
                     location.reload();
                 } else {
-                    alert('ログインに失敗しました: ' + (result.error || '不明なエラー'));
+                    showError(result.error || 'ログインに失敗しました');
                 }
             } catch (e) {
-                alert('エラーが発生しました');
+                showError('通信エラーが発生しました');
             }
         }
 
         async function handleBasicSignup(event) {
             event.preventDefault();
+            clearError();
             const form = event.target;
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
@@ -318,10 +343,10 @@
                     localStorage.setItem('token', result.token);
                     location.reload();
                 } else {
-                    alert('登録に失敗しました: ' + (result.error || '不明なエラー'));
+                    showError(result.error || '登録に失敗しました');
                 }
             } catch (e) {
-                alert('エラーが発生しました');
+                showError('通信エラーが発生しました');
             }
         }
 
