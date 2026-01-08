@@ -249,18 +249,22 @@ export function UserEditModal({ user, isOpen, onClose, onUpdate, onDelete }: Use
                   <Tag className="h-3.5 w-3.5" />
                   ラベル
                 </label>
-                <div className="flex flex-wrap gap-1.5 mb-2 min-h-[32px]">
-                  {selectedLabels.map((label) => (
-                    <span
-                      key={label}
-                      className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-100"
-                    >
-                      {label}
-                      <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </span>
-                  ))}
+                <div className="flex flex-wrap gap-1.5 mb-2 max-h-[100px] overflow-y-auto p-1 border rounded-lg bg-gray-50/30 scrollbar-thin scrollbar-thumb-gray-200">
+                  {selectedLabels.length === 0 ? (
+                    <span className="text-xs text-gray-400 py-1 px-2">ラベルなし</span>
+                  ) : (
+                    selectedLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-100 h-6"
+                      >
+                        {label}
+                        <button onClick={() => handleRemoveLabel(label)} className="hover:text-blue-900 transition-colors">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    ))
+                  )}
                 </div>
                 <div className="relative">
                   <select 
