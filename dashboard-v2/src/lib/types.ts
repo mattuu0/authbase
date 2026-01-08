@@ -28,6 +28,8 @@ export interface Provider {
 export interface Session {
   id: string;
   userId: string;
+  userName?: string;
+  userEmail?: string;
   ipAddress: string;
   userAgent: string;
   createdAt: string;
