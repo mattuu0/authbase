@@ -67,10 +67,14 @@ export function SessionDeleteModal({ session, isOpen, onClose, onConfirm }: Sess
               </div>
             </div>
             
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-500">OS / Browser</span>
-                <span className="text-gray-900 font-medium truncate max-w-[180px] text-right" title={session.userAgent}>
+                <span className="text-gray-500">ユーザーID</span>
+                <span className="font-mono text-gray-900 bg-gray-100 px-1 rounded">{session.userId}</span>
+              </div>
+              <div className="flex flex-col gap-1 text-xs">
+                <span className="text-gray-500">User Agent</span>
+                <span className="text-gray-900 font-medium bg-gray-50 p-2 rounded border border-gray-100 break-all leading-normal">
                   {session.userAgent}
                 </span>
               </div>
