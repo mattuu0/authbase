@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react";
 import { 
   Search, 
-  MoreHorizontal, 
   UserX, 
   UserCheck, 
   Trash2, 
   Edit2,
-  ExternalLink,
   Shield,
   ShieldAlert
 } from "lucide-react";
@@ -16,6 +14,7 @@ import { cn } from "../lib/utils";
 import { UserEditModal } from "../components/UserEditModal";
 import { UserDeleteModal } from "../components/UserDeleteModal";
 import { UserCreateModal } from "../components/UserCreateModal";
+import { UserBanModal } from "../components/UserBanModal";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,6 +22,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [banningUser, setBanningUser] = useState<User | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
@@ -41,12 +41,13 @@ export default function UsersPage() {
     }
   };
 
-  const handleToggleBan = async (userId: string) => {
+  const confirmToggleBan = async (userId: string) => {
     try {
       await toggleUserBan(userId);
       setUsers(users.map(u => u.id === userId ? { ...u, banned: !u.banned } : u));
     } catch (error) {
       console.error("Failed to toggle ban:", error);
+      throw error;
     }
   };
 
@@ -170,63 +171,71 @@ export default function UsersPage() {
                         >
                           <Edit2 className="h-4 w-4" />
                         </button>
-                        <button
-                          onClick={() => handleToggleBan(user.id)}
-                          className={cn(
-                            "rounded-md p-2 transition-colors",
-                            user.banned ? "text-green-600 hover:bg-green-50" : "text-amber-600 hover:bg-amber-50"
-                          )}
-                          title={user.banned ? "制限解除" : "BAN"}
-                        >
-                          {user.banned ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-                        </button>
-                        <button
-                          onClick={() => setDeletingUser(user)}
-                          className="rounded-md p-2 text-red-600 hover:bg-red-50 transition-colors"
-                          title="削除"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <UserEditModal
-        user={editingUser}
-        isOpen={!!editingUser}
-        onClose={() => setEditingUser(null)}
-        onUpdate={(updated) => {
-          setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
-        }}
-        onDelete={(userId) => {
-          const userToDelete = users.find(u => u.id === userId);
-          if (userToDelete) {
-            setEditingUser(null);
-            setDeletingUser(userToDelete);
-          }
-        }}
-      />
-
-      <UserDeleteModal
-        user={deletingUser}
-        isOpen={!!deletingUser}
-        onClose={() => setDeletingUser(null)}
-        onConfirm={() => confirmDelete(deletingUser!.id)}
-      />
-
-      <UserCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreated={(newUser) => {
-          setUsers([newUser, ...users]);
-        }}
-      />
-    </div>
-  );
-}
+                                                <button
+                                                  onClick={() => setBanningUser(user)}
+                                                  className={cn(
+                                                    "rounded-md p-2 transition-colors",
+                                                    user.banned ? "text-green-600 hover:bg-green-50" : "text-amber-600 hover:bg-amber-50"
+                                                  )}
+                                                  title={user.banned ? "制限解除" : "BAN"}
+                                                >
+                                                  {user.banned ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                                                </button>
+                                                <button
+                                                  onClick={() => setDeletingUser(user)}
+                                                  className="rounded-md p-2 text-red-600 hover:bg-red-50 transition-colors"
+                                                  title="削除"
+                                                >
+                                                  <Trash2 className="h-4 w-4" />
+                                                </button>
+                                              </div>
+                                            </td>
+                                          </tr>
+                                        ))
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                        
+                              <UserEditModal
+                                user={editingUser}
+                                isOpen={!!editingUser}
+                                onClose={() => setEditingUser(null)}
+                                onUpdate={(updated) => {
+                                  setUsers(users.map((u) => (u.id === updated.id ? updated : u)));
+                                }}
+                                onDelete={(userId) => {
+                                  const userToDelete = users.find(u => u.id === userId);
+                                  if (userToDelete) {
+                                    setEditingUser(null);
+                                    setDeletingUser(userToDelete);
+                                  }
+                                }}
+                              />
+                        
+                              <UserDeleteModal
+                                user={deletingUser}
+                                isOpen={!!deletingUser}
+                                onClose={() => setDeletingUser(null)}
+                                onConfirm={() => confirmDelete(deletingUser!.id)}
+                              />
+                        
+                              <UserBanModal
+                                user={banningUser}
+                                isOpen={!!banningUser}
+                                onClose={() => setBanningUser(null)}
+                                onConfirm={() => confirmToggleBan(banningUser!.id)}
+                              />
+                        
+                              <UserCreateModal
+                                isOpen={isCreateModalOpen}
+                                onClose={() => setIsCreateModalOpen(false)}
+                                onCreated={(newUser) => {
+                                  setUsers([newUser, ...users]);
+                                }}
+                              />
+                            </div>
+                          );
+                        }
+                        
