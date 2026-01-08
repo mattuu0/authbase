@@ -9,21 +9,35 @@ import {
   MapPin, 
   User as UserIcon,
   ChevronDown,
-  History
+  History,
+  Users
 } from "lucide-react";
-import type { Session } from "../lib/types";
+import type { Session, User } from "../lib/types";
 import { getSessions, deleteSession } from "../services/session-service";
+import { getUsers } from "../services/user-service";
 import { cn } from "../lib/utils";
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [selectedUserId, setSelectedUserId] = useState<string>("all");
 
   useEffect(() => {
     fetchSessions();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    }
+  };
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -53,6 +67,10 @@ export default function SessionsPage() {
       (statusFilter === "active" && session.isActive) || 
       (statusFilter === "inactive" && !session.isActive);
     
+    const matchesUser = 
+      selectedUserId === "all" || 
+      session.userId === selectedUserId;
+    
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = 
       session.userId.toLowerCase().includes(searchLower) ||
@@ -60,7 +78,7 @@ export default function SessionsPage() {
       (session.userEmail || "").toLowerCase().includes(searchLower) ||
       session.ipAddress.toLowerCase().includes(searchLower);
 
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesUser && matchesSearch;
   });
 
   const getDeviceIcon = (userAgent: string) => {
@@ -80,24 +98,43 @@ export default function SessionsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
-        <div className="flex flex-1 items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
+      <div className="grid gap-4 md:grid-cols-12">
+        <div className="md:col-span-6 flex items-center gap-2 rounded-lg border bg-white px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition-all">
           <Search className="h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="ユーザー名、メール、IPアドレスで検索..."
+            placeholder="メール、IPアドレスで検索..."
             className="flex-1 border-none bg-transparent text-sm outline-none placeholder:text-gray-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         
-        <div className="flex items-center gap-2">
-          <div className="relative inline-block">
+        <div className="md:col-span-3">
+          <div className="relative">
+            <select
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+              className="w-full appearance-none rounded-lg border bg-white pl-10 pr-10 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-50 transition-all cursor-pointer"
+            >
+              <option value="all">すべてのユーザー</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
+            <Users className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
+
+        <div className="md:col-span-3">
+          <div className="relative">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="appearance-none rounded-lg border bg-white pl-10 pr-10 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-50 transition-all cursor-pointer"
+              className="w-full appearance-none rounded-lg border bg-white pl-10 pr-10 py-2 text-sm font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-50 transition-all cursor-pointer"
             >
               <option value="all">すべてのステータス</option>
               <option value="active">オンラインのみ</option>
