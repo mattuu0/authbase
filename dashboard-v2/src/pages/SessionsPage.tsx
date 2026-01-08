@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -18,12 +19,15 @@ import { getUsers } from "../services/user-service";
 import { cn } from "../lib/utils";
 
 export default function SessionsPage() {
+  const [searchParams] = useSearchParams();
+  const userIdParam = searchParams.get("userId");
+
   const [sessions, setSessions] = useState<Session[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
-  const [selectedUserId, setSelectedUserId] = useState<string>("all");
+  const [selectedUserId, setSelectedUserId] = useState<string>(userIdParam || "all");
 
   useEffect(() => {
     fetchSessions();

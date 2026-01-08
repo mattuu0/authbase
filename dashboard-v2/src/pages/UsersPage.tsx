@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   UserX, 
@@ -6,7 +7,8 @@ import {
   Trash2, 
   Edit2,
   Shield,
-  ShieldAlert
+  ShieldAlert,
+  History
 } from "lucide-react";
 import type { User } from "../lib/types";
 import { getUsers, toggleUserBan, deleteUser } from "../services/user-service";
@@ -17,6 +19,7 @@ import { UserCreateModal } from "../components/UserCreateModal";
 import { UserBanModal } from "../components/UserBanModal";
 
 export default function UsersPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -164,6 +167,13 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/dashboard/sessions?userId=${user.id}`)}
+                          className="rounded-md p-2 text-gray-600 hover:bg-gray-100 transition-colors"
+                          title="セッション一覧"
+                        >
+                          <History className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => setEditingUser(user)}
                           className="rounded-md p-2 text-blue-600 hover:bg-blue-50 transition-colors"
