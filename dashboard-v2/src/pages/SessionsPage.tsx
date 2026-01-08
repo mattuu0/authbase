@@ -17,6 +17,7 @@ import type { Session, User } from "../lib/types";
 import { getSessions, deleteSession } from "../services/session-service";
 import { getUsers } from "../services/user-service";
 import { cn } from "../lib/utils";
+import { SessionDeleteModal } from "../components/SessionDeleteModal";
 
 export default function SessionsPage() {
   const [searchParams] = useSearchParams();
@@ -28,6 +29,7 @@ export default function SessionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [selectedUserId, setSelectedUserId] = useState<string>(userIdParam || "all");
+  const [deletingSession, setDeletingSession] = useState<Session | null>(null);
 
   useEffect(() => {
     fetchSessions();
@@ -55,17 +57,18 @@ export default function SessionsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("このセッションを終了してもよろしいですか？")) return;
+  const confirmDelete = async (id: string) => {
     try {
       await deleteSession(id);
       setSessions(sessions.filter((s) => s.id !== id));
     } catch (error) {
       console.error("Failed to delete session:", error);
+      throw error;
     }
   };
 
   const filteredSessions = sessions.filter((session) => {
+// ... (omitting middle part for clarity in search, will replace the whole block if needed)
     const matchesStatus = 
       statusFilter === "all" || 
       (statusFilter === "active" && session.isActive) || 
@@ -219,7 +222,7 @@ export default function SessionsPage() {
               
               <div className="flex shrink-0 items-center gap-3">
                 <button
-                  onClick={() => handleDelete(session.id)}
+                  onClick={() => setDeletingSession(session)}
                   className="flex flex-1 sm:flex-none items-center justify-center gap-2 rounded-lg border border-red-100 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 hover:border-red-200 transition-all active:scale-[0.98]"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -230,6 +233,13 @@ export default function SessionsPage() {
           ))
         )}
       </div>
+
+      <SessionDeleteModal
+        session={deletingSession}
+        isOpen={!!deletingSession}
+        onClose={() => setDeletingSession(null)}
+        onConfirm={() => confirmDelete(deletingSession!.id)}
+      />
     </div>
   );
 }
