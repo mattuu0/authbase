@@ -12,6 +12,8 @@ jobs:
   test:
     name: Run Go Tests
     runs-on: ubuntu-latest
+    container:
+      image: golang:1.25.5-bookworm
     
     defaults:
       run:
@@ -20,12 +22,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.25.5'
-          cache-dependency-path: auth/src/go.sum
 
       - name: Install dependencies
         run: go mod download
