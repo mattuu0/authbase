@@ -22,7 +22,13 @@ func CreateLabel(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
+	// 作成したラベルを取得
+	label, err := services.GetLabel(args.Name)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, label)
 }
 
 func GetLabels(ctx echo.Context) error {
@@ -70,5 +76,11 @@ func UpdateLabel(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 
-	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
+	// 更新したラベルを取得 (IDが名前なので、args.Nameを使う)
+	label, err := services.GetLabel(args.Name)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, label)
 }

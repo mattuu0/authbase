@@ -39,7 +39,7 @@ export default function LabelsPage() {
   };
 
   const filteredLabels = labels.filter((label) =>
-    label.name.toLowerCase().includes(searchQuery.toLowerCase())
+    label && label.name && label.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
