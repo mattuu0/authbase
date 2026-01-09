@@ -1,31 +1,36 @@
 import type { Label } from "../lib/types";
 
-const mockLabels: Label[] = [
-  { id: "lbl_1", name: "管理者", color: "#ef4444", createdAt: "2023-01-10" },
-  { id: "lbl_2", name: "一般ユーザー", color: "#3b82f6", createdAt: "2023-01-15" },
-  { id: "lbl_3", name: "プレミアム", color: "#a855f7", createdAt: "2023-02-20" },
-  { id: "lbl_4", name: "ベータテスター", color: "#22c55e", createdAt: "2023-03-05" },
-];
-
 export async function getLabels(): Promise<Label[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return [...mockLabels];
+  const response = await fetch("/api/labels");
+  if (!response.ok) throw new Error("Failed to fetch labels");
+  return await response.json();
 }
 
 export async function deleteLabel(labelId: string): Promise<void> {
-  const index = mockLabels.findIndex((l) => l.id === labelId);
-  if (index !== -1) {
-    mockLabels.splice(index, 1);
-  }
+  const response = await fetch("/api/labels", {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: labelId }),
+  });
+  if (!response.ok) throw new Error("Failed to delete label");
 }
 
 export async function createLabel(label: { name: string; color: string }): Promise<Label> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const newLabel: Label = {
-    id: `lbl_${Math.random().toString(36).substr(2, 9)}`,
-    ...label,
-    createdAt: new Date().toISOString().split("T")[0],
-  };
-  mockLabels.push(newLabel);
-  return newLabel;
+  const response = await fetch("/api/labels", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(label),
+  });
+  if (!response.ok) throw new Error("Failed to create label");
+  return await response.json();
+}
+
+export async function updateLabel(label: { id: string; name: string; color: string }): Promise<Label> {
+  const response = await fetch("/api/labels", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(label),
+  });
+  if (!response.ok) throw new Error("Failed to update label");
+  return await response.json();
 }

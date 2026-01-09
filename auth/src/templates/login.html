@@ -315,6 +315,7 @@
                 const result = await response.json();
                 if (response.ok) {
                     localStorage.setItem('token', result.token);
+                    sessionStorage.setItem('justLoggedIn', 'true');
                     location.reload();
                 } else {
                     showError(result.error || 'ログインに失敗しました');
@@ -341,6 +342,7 @@
                 const result = await response.json();
                 if (response.ok) {
                     localStorage.setItem('token', result.token);
+                    sessionStorage.setItem('justLoggedIn', 'true');
                     location.reload();
                 } else {
                     showError(result.error || '登録に失敗しました');
@@ -367,12 +369,13 @@
                     return;
                 }
 
+                // ログイン直後（sessionStorageにフラグがある）の場合は自動起動しない
+                const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+
                 if (isMobile()) {
                     const url = customScheme + "://?token=" + token;
                     document.getElementById('app-link').href = url;
 
-                    // ログイン直後（sessionStorageにフラグがある）の場合は自動起動しない
-                    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
                     if (justLoggedIn) {
                         sessionStorage.removeItem('justLoggedIn');
                         // 自動起動はせず、手動起動画面を表示する
@@ -386,6 +389,14 @@
                             elOpenApp.classList.remove('hidden');
                         }, 1500);
                     }
+                    return;
+                }
+
+                if (justLoggedIn) {
+                    sessionStorage.removeItem('justLoggedIn');
+                    document.getElementById('app-link').href = '/statics/home.html';
+                    hideAll();
+                    elOpenApp.classList.remove('hidden');
                     return;
                 }
 

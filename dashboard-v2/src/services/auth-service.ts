@@ -1,17 +1,34 @@
-// Auth service mock
-export async function login(email: string, password: string): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  if (email === "admin@example.com" && password === "password") {
-    localStorage.setItem("auth_token", "mock_token");
-    return;
+export async function login(username: string, password: string): Promise<void> {
+  const response = await fetch("/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || "Invalid credentials");
   }
-  throw new Error("Invalid credentials");
 }
 
 export async function logout(): Promise<void> {
+  await fetch("/admin/logout", { method: "POST" });
+  // We don't really need to remove anything from localStorage if we don't use tokens there anymore,
+  // but if the app relies on it for isAuthenticated() check, we should handle it.
   localStorage.removeItem("auth_token");
 }
 
-export function isAuthenticated(): boolean {
-  return !!localStorage.getItem("auth_token");
+export async function isAuthenticated(): Promise<boolean> {
+  try {
+    const response = await fetch("/admin/info");
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function getCurrentUser() {
+  const response = await fetch("/admin/info");
+  if (!response.ok) return null;
+  return await response.json();
 }

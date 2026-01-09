@@ -1,60 +1,41 @@
 import type { Provider } from "../lib/types";
 
-const mockProviders: Provider[] = [
-  {
-    ProviderCode: "google",
-    ClientID: "123456789012-apps.googleusercontent.com",
-    ClientSecret: "GOCSPX-secret",
-    CallbackURL: "http://localhost:3000/auth/callback/google",
-    IsEnabled: 1,
-  },
-  {
-    ProviderCode: "github",
-    ClientID: "gh-client-id",
-    ClientSecret: "gh-client-secret",
-    CallbackURL: "http://localhost:3000/auth/callback/github",
-    IsEnabled: 1,
-  },
-  {
-    ProviderCode: "discord",
-    ClientID: "",
-    ClientSecret: "",
-    CallbackURL: "http://localhost:3000/auth/callback/discord",
-    IsEnabled: 0,
-  },
-  {
-    ProviderCode: "microsoft",
-    ClientID: "",
-    ClientSecret: "",
-    CallbackURL: "http://localhost:3000/auth/callback/microsoft",
-    IsEnabled: 0,
-  },
-  {
-    ProviderCode: "basic",
-    ClientID: "N/A",
-    ClientSecret: "N/A",
-    CallbackURL: "N/A",
-    IsEnabled: 1,
-  },
-];
-
 export async function getProviders(): Promise<Provider[]> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  return [...mockProviders];
+  const response = await fetch("/api/providers/oauth");
+  if (!response.ok) throw new Error("Failed to fetch providers");
+  return await response.json();
 }
 
 export async function toggleProvider(code: string): Promise<Provider> {
-  const provider = mockProviders.find((p) => p.ProviderCode === code);
+  const providers = await getProviders();
+  const provider = providers.find((p) => p.ProviderCode === code);
   if (!provider) throw new Error("Provider not found");
-  provider.IsEnabled = provider.IsEnabled === 1 ? 0 : 1;
-  return { ...provider };
+  
+  const updatedProvider = { ...provider, IsEnabled: provider.IsEnabled === 1 ? 0 : 1 };
+  
+  const response = await fetch("/api/providers/oauth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify([updatedProvider]),
+  });
+  
+  if (!response.ok) throw new Error("Failed to update provider");
+  return updatedProvider;
 }
 
 export async function updateProvider(code: string, updates: Partial<Provider>): Promise<Provider> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const index = mockProviders.findIndex((p) => p.ProviderCode === code);
+  const providers = await getProviders();
+  const index = providers.findIndex((p) => p.ProviderCode === code);
   if (index === -1) throw new Error("Provider not found");
   
-  mockProviders[index] = { ...mockProviders[index], ...updates };
-  return { ...mockProviders[index] };
+  const updatedProvider = { ...providers[index], ...updates };
+  
+  const response = await fetch("/api/providers/oauth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify([updatedProvider]),
+  });
+  
+  if (!response.ok) throw new Error("Failed to update provider");
+  return updatedProvider;
 }

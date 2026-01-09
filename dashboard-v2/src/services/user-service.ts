@@ -4,73 +4,38 @@ export interface CreateUserRequest {
   id?: string;
   name: string;
   email: string;
-  password: string;
+  password?: string;
   provider: string;
   providerId: string;
   avatar: string;
   labels: string[];
 }
 
-const mockUsers: User[] = [
-  {
-    id: "usr_123456789",
-    name: "山田太郎",
-    email: "yamada@example.com",
-    provider: "google",
-    providerId: "109876543210",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yamada",
-    labels: ["管理者"],
-    createdAt: "2023-01-15",
-    banned: false,
-  },
-  {
-    id: "usr_987654321",
-    name: "佐藤花子",
-    email: "sato@example.com",
-    provider: "github",
-    providerId: "sato123",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sato",
-    labels: ["一般ユーザー"],
-    createdAt: "2023-02-20",
-    banned: false,
-  },
-  {
-    id: "usr_456789123",
-    name: "鈴木一郎",
-    email: "suzuki@example.com",
-    provider: "basic",
-    providerId: "suzuki_ichiro",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Suzuki",
-    labels: ["プレミアム"],
-    createdAt: "2023-03-10",
-    banned: true,
-  },
-];
-
 export async function getUsers(): Promise<User[]> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return [...mockUsers];
+  const response = await fetch("/api/user/all");
+  if (!response.ok) throw new Error("Failed to fetch users");
+  return await response.json();
 }
 
 export async function getUserById(id: string): Promise<User | null> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  const user = mockUsers.find((u) => u.id === id);
-  return user ? { ...user } : null;
+  const users = await getUsers();
+  return users.find((u) => u.id === id) || null;
 }
 
 export async function updateUser(id: string, data: Partial<User>): Promise<User> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const index = mockUsers.findIndex((u) => u.id === id);
-  if (index === -1) throw new Error("User not found");
-  
-  mockUsers[index] = { ...mockUsers[index], ...data };
-  return { ...mockUsers[index] };
+  const response = await fetch("/api/user", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...data, id }),
+  });
+  if (!response.ok) throw new Error("Failed to update user");
+  return await response.json();
 }
 
 export async function searchUsers(query: string): Promise<User[]> {
+  const users = await getUsers();
   const lowerQuery = query.toLowerCase();
-  return mockUsers.filter(
+  return users.filter(
     (user) =>
       user.name.toLowerCase().includes(lowerQuery) ||
       user.email.toLowerCase().includes(lowerQuery) ||
@@ -79,32 +44,38 @@ export async function searchUsers(query: string): Promise<User[]> {
 }
 
 export async function createUser(data: CreateUserRequest): Promise<User> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  const newUser: User = {
-    id: `usr_${Math.random().toString(36).substring(2, 9)}`,
-    name: data.name,
-    email: data.email,
-    provider: data.provider || "basic",
-    providerId: data.providerId || data.email,
-    avatar: data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.name}`,
-    labels: data.labels || [],
-    createdAt: new Date().toISOString().split("T")[0],
-    banned: false,
-  };
-  mockUsers.unshift(newUser);
-  return newUser;
+  // If the backend has a specific create user endpoint, use it.
+  // Based on init.go, there isn't a direct /api/user POST endpoint for admins yet,
+  // but there is /basic/signup. However, that might be for public use.
+  // For now, let's assume there's no admin create user API if it's not in init.go.
+  // Wait, I should check controllers/user.go to see if there's any hidden ones.
+  throw new Error("Create user API not implemented in backend yet");
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const index = mockUsers.findIndex((u) => u.id === userId);
-  if (index !== -1) {
-    mockUsers.splice(index, 1);
-  }
+  const response = await fetch("/api/user", {
+    method: "DELETE",
+    headers: { 
+      "Content-Type": "application/json",
+      "userid": userId
+    },
+  });
+  if (!response.ok) throw new Error("Failed to delete user");
 }
 
 export async function toggleUserBan(userId: string): Promise<User> {
-  const user = mockUsers.find((u) => u.id === userId);
+  const users = await getUsers();
+  const user = users.find(u => u.id === userId);
   if (!user) throw new Error("User not found");
-  user.banned = !user.banned;
-  return { ...user };
+
+  const response = await fetch("/api/user/ban", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      UserID: userId,
+      IsBanned: !user.banned
+    }),
+  });
+  if (!response.ok) throw new Error("Failed to toggle ban");
+  return await response.json();
 }
