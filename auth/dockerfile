@@ -11,6 +11,14 @@ RUN go install github.com/air-verse/air@latest
 
 CMD ["air", "-c", ".air.toml"]
 
+# Test
+FROM Develop as test
+COPY ./src /root/src
+WORKDIR /root/src
+RUN go mod download
+# デフォルトでテストを実行する設定
+CMD ["go", "test", "-v", "./..."]
+
 # Build 
 FROM golang:1-bookworm as build
 
