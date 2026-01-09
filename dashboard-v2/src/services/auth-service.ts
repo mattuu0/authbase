@@ -1,5 +1,5 @@
 export async function login(username: string, password: string): Promise<void> {
-  const response = await fetch("/admin/login", {
+  const response = await fetch("/auth/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
@@ -16,7 +16,7 @@ export async function login(username: string, password: string): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/admin/logout", { 
+  await fetch("/auth/admin/logout", { 
     method: "POST",
     credentials: "include",
   });
@@ -27,7 +27,7 @@ export async function logout(): Promise<void> {
 
 export async function isAuthenticated(): Promise<boolean> {
   try {
-    const response = await fetch("/admin/info", {
+    const response = await fetch("/auth/admin/info", {
       credentials: "include",
     });
     if (!response.ok) {
@@ -42,7 +42,7 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export async function getCurrentUser() {
-  const response = await fetch("/admin/info", {
+  const response = await fetch("/auth/admin/info", {
     credentials: "include",
   });
   if (!response.ok) return null;

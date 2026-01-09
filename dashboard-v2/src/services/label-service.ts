@@ -1,7 +1,7 @@
 import type { Label } from "../lib/types";
 
 export async function getLabels(): Promise<Label[]> {
-  const response = await fetch("/api/labels", {
+  const response = await fetch("/auth/api/labels", {
     credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to fetch labels");
@@ -9,7 +9,7 @@ export async function getLabels(): Promise<Label[]> {
 }
 
 export async function deleteLabel(labelId: string): Promise<void> {
-  const response = await fetch("/api/labels", {
+  const response = await fetch("/auth/api/labels", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id: labelId }),
@@ -19,7 +19,7 @@ export async function deleteLabel(labelId: string): Promise<void> {
 }
 
 export async function createLabel(label: { name: string; color: string }): Promise<Label> {
-  const response = await fetch("/api/labels", {
+  const response = await fetch("/auth/api/labels", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(label),
@@ -30,7 +30,7 @@ export async function createLabel(label: { name: string; color: string }): Promi
 }
 
 export async function updateLabel(label: { id: string; name: string; color: string }): Promise<Label> {
-  const response = await fetch("/api/labels", {
+  const response = await fetch("/auth/api/labels", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(label),

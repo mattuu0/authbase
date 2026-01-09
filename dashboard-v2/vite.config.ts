@@ -8,13 +8,13 @@ export default defineConfig({
   plugins: [react(),tailwindcss(),],
   server: {
     proxy: {
-      '/api': {
-        target: 'https://localhost:8947/auth',
+      '/auth/api': {
+        target: 'https://localhost:8947',
         changeOrigin: true,
         secure: false,
       },
-      '/admin': {
-        target: 'https://localhost:8947/auth',
+      '/auth/admin': {
+        target: 'https://localhost:8947',
         changeOrigin: true,
         secure: false,
       },

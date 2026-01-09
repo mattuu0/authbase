@@ -1,7 +1,7 @@
 import { type User, type CreateUserRequest } from "../lib/types";
 
 export async function getUsers(): Promise<User[]> {
-  const response = await fetch("/api/user/all", {
+  const response = await fetch("/auth/api/user/all", {
     credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to fetch users");
@@ -14,7 +14,7 @@ export async function getUserById(id: string): Promise<User | null> {
 }
 
 export async function updateUser(id: string, data: Partial<User>): Promise<User> {
-  const response = await fetch("/api/user", {
+  const response = await fetch("/auth/api/user", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...data, id }),
@@ -45,7 +45,7 @@ export async function createUser(_data: CreateUserRequest): Promise<User> {
 }
 
 export async function deleteUser(userId: string): Promise<void> {
-  const response = await fetch("/api/user", {
+  const response = await fetch("/auth/api/user", {
     method: "DELETE",
     headers: { 
       "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export async function toggleUserBan(userId: string): Promise<User> {
   const user = users.find(u => u.id === userId);
   if (!user) throw new Error("User not found");
 
-  const response = await fetch("/api/user/ban", {
+  const response = await fetch("/auth/api/user/ban", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

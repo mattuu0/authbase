@@ -1,7 +1,7 @@
 import type { Session } from "../lib/types";
 
 export async function getSessions(): Promise<Session[]> {
-  const response = await fetch("/api/session", {
+  const response = await fetch("/auth/api/session", {
     credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to fetch sessions");
@@ -9,7 +9,7 @@ export async function getSessions(): Promise<Session[]> {
 }
 
 export async function deleteSession(id: string): Promise<void> {
-  const response = await fetch("/api/session", {
+  const response = await fetch("/auth/api/session", {
     method: "DELETE",
     headers: { 
       "Content-Type": "application/json",
