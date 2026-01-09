@@ -9,6 +9,9 @@ export async function login(username: string, password: string): Promise<void> {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.error || "Invalid credentials");
   }
+
+  // Backend uses cookies, but we set a flag for frontend consistency if needed
+  localStorage.setItem("auth_token", "session_active");
 }
 
 export async function logout(): Promise<void> {
@@ -21,8 +24,13 @@ export async function logout(): Promise<void> {
 export async function isAuthenticated(): Promise<boolean> {
   try {
     const response = await fetch("/admin/info");
-    return response.ok;
+    if (!response.ok) {
+      localStorage.removeItem("auth_token");
+      return false;
+    }
+    return true;
   } catch {
+    localStorage.removeItem("auth_token");
     return false;
   }
 }
