@@ -45,7 +45,7 @@ func main() {
 
 	// ヘルスチェック
 	router.GET("/health", func(ctx echo.Context) error {
-		return ctx.String(http.StatusOK, "OK")
+		return ctx.String(http.StatusOK, "Service Operational")
 	})
 	
 	router.Logger.Fatal(router.Start(":8080"))

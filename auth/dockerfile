@@ -1,7 +1,7 @@
-FROM golang:1-bookworm as Develop
+FROM golang:1-bookworm AS develop
 
 # 各種ツールインストール
-RUN apt update & apt install -y curl wget git 
+RUN apt update && apt install -y curl wget git 
 
 # 作業ディレクトリを移動
 WORKDIR /root/src
@@ -11,11 +11,19 @@ RUN go install github.com/air-verse/air@latest
 
 CMD ["air", "-c", ".air.toml"]
 
+# Test
+FROM develop AS test
+COPY ./src /root/src
+WORKDIR /root/src
+RUN go mod download
+# デフォルトでテストを実行する設定
+CMD ["go", "test", "-v", "./..."]
+
 # Build 
-FROM golang:1-bookworm as build
+FROM golang:1-bookworm AS build
 
 # 各種ツールインストール
-RUN apt update & apt install -y curl wget git
+RUN apt update && apt install -y curl wget git
 
 # コピー
 COPY ./src /root/src
@@ -29,7 +37,7 @@ RUN go mod download
 RUN CGO_ENABLED=0 go build -x --ldflags "-s -w" -o /go/bin/auth .
 
 # 実行環境
-FROM gcr.io/distroless/static-debian12 as Release
+FROM gcr.io/distroless/static-debian12 AS release
 COPY ./src/templates /templates
 COPY ./src/dashboard /dashboard
 COPY --from=build /go/bin/auth /
