@@ -28,12 +28,12 @@ export interface Provider {
 export interface Session {
   id: string;
   userId: string;
-  userName?: string;
-  userEmail?: string;
+  userName: string;
+  userEmail: string;
   ipAddress: string;
   userAgent: string;
-  createdAt: string;
-  expiresAt: string;
+  createdAt: number;
+  expiresAt: number;
   isActive: boolean;
 }
 

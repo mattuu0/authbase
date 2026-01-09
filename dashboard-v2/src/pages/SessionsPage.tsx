@@ -81,8 +81,8 @@ export default function SessionsPage() {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = 
       session.userId.toLowerCase().includes(searchLower) ||
-      (session.userName || "").toLowerCase().includes(searchLower) ||
-      (session.userEmail || "").toLowerCase().includes(searchLower) ||
+      session.userName.toLowerCase().includes(searchLower) ||
+      session.userEmail.toLowerCase().includes(searchLower) ||
       session.ipAddress.toLowerCase().includes(searchLower);
 
     return matchesStatus && matchesUser && matchesSearch;
@@ -196,10 +196,11 @@ export default function SessionsPage() {
                   </div>
                   
                   <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
                       <UserIcon className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium">{session.userName || "不明なユーザー"}</span>
-                      <span className="text-gray-400 text-xs">({session.userEmail || "メールなし"})</span>
+                      <span className="font-bold text-gray-900">{session.userName}</span>
+                      <span className="text-gray-500 text-xs">{session.userEmail}</span>
+                      <span className="text-gray-300 text-[10px] font-mono select-all" title="User ID">UID: {session.userId}</span>
                     </div>
                   </div>
 
@@ -209,9 +210,17 @@ export default function SessionsPage() {
                       作成: {new Date(session.createdAt).toLocaleString("ja-JP")}
                     </span>
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
-                      ID: {session.id}
+                      <Clock className="h-3.5 w-3.5 text-amber-400" />
+                      期限: {new Date(session.expiresAt).toLocaleString("ja-JP")}
                     </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5" />
+                      IP: {session.ipAddress}
+                    </span>
+                  </div>
+                  
+                  <div className="text-[10px] font-mono text-gray-400 bg-gray-50 px-2 py-0.5 rounded border border-gray-100 inline-block">
+                    SID: {session.id}
                   </div>
                   
                   <p className="text-xs text-gray-400 truncate max-w-xs md:max-w-md lg:max-w-lg" title={session.userAgent}>
