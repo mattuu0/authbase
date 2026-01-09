@@ -53,7 +53,7 @@ func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 		return "", structs.HttpResult{
 			Code: http.StatusConflict,
 			Message: "user already exists",
-			Error:   err,
+			Error:   errors.New("user already exists"),
 			Success: false,
 		}
 	}
