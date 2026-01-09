@@ -1,7 +1,9 @@
 import type { Provider } from "../lib/types";
 
 export async function getProviders(): Promise<Provider[]> {
-  const response = await fetch("/api/providers/oauth");
+  const response = await fetch("/api/providers/oauth", {
+    credentials: "include"
+  });
   if (!response.ok) throw new Error("Failed to fetch providers");
   return await response.json();
 }
@@ -17,6 +19,7 @@ export async function toggleProvider(code: string): Promise<Provider> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify([updatedProvider]),
+    credentials: "include"
   });
   
   if (!response.ok) throw new Error("Failed to update provider");
@@ -34,6 +37,7 @@ export async function updateProvider(code: string, updates: Partial<Provider>): 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify([updatedProvider]),
+    credentials: "include"
   });
   
   if (!response.ok) throw new Error("Failed to update provider");

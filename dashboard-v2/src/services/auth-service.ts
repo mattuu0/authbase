@@ -3,6 +3,7 @@ export async function login(username: string, password: string): Promise<void> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),
+    credentials: "include",
   });
   
   if (!response.ok) {
@@ -15,7 +16,10 @@ export async function login(username: string, password: string): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/admin/logout", { method: "POST" });
+  await fetch("/admin/logout", { 
+    method: "POST",
+    credentials: "include",
+  });
   // We don't really need to remove anything from localStorage if we don't use tokens there anymore,
   // but if the app relies on it for isAuthenticated() check, we should handle it.
   localStorage.removeItem("auth_token");
@@ -23,7 +27,9 @@ export async function logout(): Promise<void> {
 
 export async function isAuthenticated(): Promise<boolean> {
   try {
-    const response = await fetch("/admin/info");
+    const response = await fetch("/admin/info", {
+      credentials: "include",
+    });
     if (!response.ok) {
       localStorage.removeItem("auth_token");
       return false;
@@ -36,7 +42,9 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 export async function getCurrentUser() {
-  const response = await fetch("/admin/info");
+  const response = await fetch("/admin/info", {
+    credentials: "include",
+  });
   if (!response.ok) return null;
   return await response.json();
 }

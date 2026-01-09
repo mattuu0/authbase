@@ -12,7 +12,9 @@ export interface CreateUserRequest {
 }
 
 export async function getUsers(): Promise<User[]> {
-  const response = await fetch("/api/user/all");
+  const response = await fetch("/api/user/all", {
+    credentials: "include"
+  });
   if (!response.ok) throw new Error("Failed to fetch users");
   return await response.json();
 }
@@ -27,6 +29,7 @@ export async function updateUser(id: string, data: Partial<User>): Promise<User>
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...data, id }),
+    credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to update user");
   return await response.json();
@@ -59,6 +62,7 @@ export async function deleteUser(userId: string): Promise<void> {
       "Content-Type": "application/json",
       "userid": userId
     },
+    credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to delete user");
 }
@@ -75,6 +79,7 @@ export async function toggleUserBan(userId: string): Promise<User> {
       UserID: userId,
       IsBanned: !user.banned
     }),
+    credentials: "include"
   });
   if (!response.ok) throw new Error("Failed to toggle ban");
   return await response.json();
