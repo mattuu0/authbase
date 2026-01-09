@@ -223,7 +223,7 @@ export default function SessionsPage() {
                     SID: {session.id}
                   </div>
                   
-                  <p className="text-xs text-gray-400 truncate max-w-xs md:max-w-md lg:max-w-lg" title={session.userAgent}>
+                  <p className="text-xs text-gray-400 break-all" title={session.userAgent}>
                     {session.userAgent}
                   </p>
                 </div>
