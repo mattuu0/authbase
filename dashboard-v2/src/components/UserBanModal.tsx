@@ -43,7 +43,7 @@ export function UserBanModal({ user, isOpen, onClose, onConfirm }: UserBanModalP
         </div>
 
         <div className="p-6">
-          <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${isBanning ? 'bg-amber-100 text-amber-600' : 'bg-green-100 text-green-600'}`}>
+          <div className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full ${isBanning ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
             {isBanning ? <UserX className="h-8 w-8" /> : <UserCheck className="h-8 w-8" />}
           </div>
 
@@ -85,7 +85,7 @@ export function UserBanModal({ user, isOpen, onClose, onConfirm }: UserBanModalP
               disabled={isProcessing}
               className={`flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-base font-bold text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 ${
                 isBanning 
-                  ? 'bg-amber-600 shadow-amber-100 hover:bg-amber-500' 
+                  ? 'bg-red-600 shadow-red-100 hover:bg-red-500' 
                   : 'bg-green-600 shadow-green-100 hover:bg-green-500'
               }`}
             >
