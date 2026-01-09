@@ -5,7 +5,7 @@ import { login } from "../services/auth-service";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,10 +16,10 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      await login(email, password);
+      await login(username, password);
       navigate("/dashboard");
     } catch (err) {
-      setError("ログインに失敗しました。メールアドレスまたはパスワードが正しくありません。");
+      setError("ログインに失敗しました。ユーザー名またはパスワードが正しくありません。");
     } finally {
       setLoading(false);
     }
@@ -46,17 +46,17 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-1">
-              <label htmlFor="email" className="text-xs font-semibold uppercase text-gray-500">
-                メールアドレス
+              <label htmlFor="username" className="text-xs font-semibold uppercase text-gray-500">
+                ユーザー名
               </label>
               <input
-                id="email"
-                type="email"
+                id="username"
+                type="text"
                 required
                 className="block w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-gray-900 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
 
