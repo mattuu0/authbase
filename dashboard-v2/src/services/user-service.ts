@@ -1,15 +1,4 @@
-import { type User } from "../lib/types";
-
-export interface CreateUserRequest {
-  id?: string;
-  name: string;
-  email: string;
-  password?: string;
-  provider: string;
-  providerId: string;
-  avatar: string;
-  labels: string[];
-}
+import { type User, type CreateUserRequest } from "../lib/types";
 
 export async function getUsers(): Promise<User[]> {
   const response = await fetch("/api/user/all", {
@@ -46,7 +35,7 @@ export async function searchUsers(query: string): Promise<User[]> {
   );
 }
 
-export async function createUser(data: CreateUserRequest): Promise<User> {
+export async function createUser(_data: CreateUserRequest): Promise<User> {
   // If the backend has a specific create user endpoint, use it.
   // Based on init.go, there isn't a direct /api/user POST endpoint for admins yet,
   // but there is /basic/signup. However, that might be for public use.

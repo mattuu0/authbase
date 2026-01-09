@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { User as UserIcon, Mail, Lock, Camera, Plus, Loader2, Tag, X } from "lucide-react";
-import type { CreateUserRequest, User, Label as LabelType } from "../lib/types";
+import { User as UserIcon, Mail, Lock, Camera, Plus, Tag, X } from "lucide-react";
+import type { User, Label as LabelType } from "../lib/types";
 import { createUser } from "../services/user-service";
 import { getLabels } from "../services/label-service";
 import { BaseModal } from "./ui/BaseModal";

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Users, Tag, Settings, History, LogOut, Menu } from "lucide-react";
+import { Users, Tag, Settings, History, LogOut } from "lucide-react";
 import { cn } from "../lib/utils";
 import { logout } from "../services/auth-service";
 
