@@ -61,7 +61,14 @@ func UpdateUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}	
 
-	return ctx.JSON(http.StatusOK, echo.Map{"message": "success"})
+	// 更新後のユーザーを取得
+	user, err := services.GetUser(args.ID)
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, user)
 }
 
 // ユーザーを削除する
@@ -112,7 +119,7 @@ func ToggleBan(ctx echo.Context) error {
 	}
 
 	// BAN を切り替える
-	err := services.ToggleBan(banArgs)
+	user, err := services.ToggleBan(banArgs)
 
 	// エラー処理
 	if err != nil {
@@ -122,9 +129,7 @@ func ToggleBan(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK,echo.Map{
-		"result" : "success",
-	})
+	return ctx.JSON(http.StatusOK, user)
 }
 
 // アイコンを更新する

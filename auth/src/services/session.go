@@ -107,6 +107,8 @@ func GetSession(tokenString string) (*models.Session, error) {
 type Session struct {
 	ID        string `json:"id"`
 	UserID    string `json:"userId"`
+	UserName  string `json:"userName"`
+	UserEmail string `json:"userEmail"`
 	IPAddress string `json:"ipAddress"`
 	UserAgent string `json:"userAgent"`
 	CreatedAt int64  `json:"createdAt"`
@@ -124,19 +126,31 @@ func GetAllSessions() ([]Session, error) {
 	}
 
 	// 返すデータ
-	returnSessions := make([]Session, len(sessions))
+	returnSessions := []Session{}
 
 	// セッションを回す
-	for i, session := range sessions {
-		returnSessions[i] = Session{
+	for _, session := range sessions {
+		// ユーザーを取得する
+		user, result := models.GetUser(session.UserID)
+		name := "不明なユーザー"
+		email := "メールなし"
+
+		if result.Error == nil {
+			name = user.Name
+			email = user.Email
+		}
+
+		returnSessions = append(returnSessions, Session{
 			ID:        session.SessionID,
 			UserID:    session.UserID,
+			UserName:  name,
+			UserEmail: email,
 			IPAddress: session.RemoteIP,
 			UserAgent: session.UserAgent,
 			CreatedAt: session.CreatedAt * 1000,
 			ExpiresAt: session.CreatedAt * 1000 + 1000*60*60*24*30,
 			IsActive:  true,
-		}
+		})
 	}
 
 	return returnSessions, nil

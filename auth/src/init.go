@@ -5,6 +5,7 @@ import (
 	"auth/middlewares"
 	"html/template"
 	"io"
+	"net/http"
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"
@@ -30,6 +31,14 @@ func (temp *TemplateRenderer) Render(writer io.Writer, name string, data interfa
 func SetupRouter(router *echo.Echo) {
 	// logger 設定
 	router.Use(middleware.Logger())
+
+	// CORS 設定
+	router.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins:     []string{"http://localhost:5173", "https://localhost:5173"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, "userid", "sessionid"},
+		AllowCredentials: true,
+	}))
 
 	// テンプレート
 	renderer := &TemplateRenderer{

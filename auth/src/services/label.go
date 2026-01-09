@@ -59,6 +59,23 @@ func GetLabels() ([]Label, error) {
 	return returnLabels, nil
 }
 
+func GetLabel(name string) (Label, error) {
+	// ラベルを取得
+	label, err := models.GetLabel(name)
+
+	// エラー処理
+	if err != nil {
+		return Label{}, err
+	}
+
+	return Label{
+		ID:        label.Name,
+		Name:      label.Name,
+		Color:     label.Color,
+		CreatedAt: FormatUnixTimestampToString(label.CreatedAt, time.RFC3339),
+	}, nil
+}
+
 type DeleteLabelArgs struct {
 	ID string `json:"id"`
 }

@@ -33,6 +33,16 @@ func GetOauthProviders() []OauthProvider {
 		})
 	}
 
+	// Basic も追加
+	basic, err := models.GetProvider(models.Basic)
+	if err == nil {
+		returnProviders = append(returnProviders, OauthProvider{
+			ProviderCode: string(basic.ProviderCode),
+			ProviderName: basic.ProviderName,
+			IsEnabled:    basic.IsEnabled,
+		})
+	}
+
 	return returnProviders
 }
 
@@ -48,9 +58,11 @@ func UpdateOauthProviders(providers []OauthProvider) error {
 		}
 
 		// データを更新する
-		getProvider.CallbackURL = provider.CallbackURL
-		getProvider.ClientID = provider.ClientID
-		getProvider.ClientSecret = provider.ClientSecret
+		if models.ProviderCode(provider.ProviderCode) != models.Basic {
+			getProvider.CallbackURL = provider.CallbackURL
+			getProvider.ClientID = provider.ClientID
+			getProvider.ClientSecret = provider.ClientSecret
+		}
 		getProvider.IsEnabled = provider.IsEnabled
 
 		// プロバイダを更新
