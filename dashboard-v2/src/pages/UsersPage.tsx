@@ -141,7 +141,7 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                        {user.labels.map((label) => (
+                        {user.labels && user.labels.filter(label => label !== null && label !== undefined).map((label) => (
                           <span
                             key={label}
                             className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700"

@@ -6,6 +6,7 @@ import (
 	"mime/multipart"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -63,6 +64,37 @@ type UpdateUserData struct {
 	Labels []string `json:"labels"` // JSONの文字列配列はGoのスライス ([]string) で受けます
 }
 
+// ユーザーを取得する関数
+func GetUser(userid string) (User, error) {
+	// ユーザーを取得
+	user, result := models.GetUser(userid)
+
+	// エラー処理
+	if result.Error != nil {
+		return User{}, result.Error
+	}
+
+	// ラベルを取得
+	labels, err := user.GetLabelNames()
+
+	// エラー処理
+	if err != nil {
+		return User{}, err
+	}
+
+	return User{
+		ID:         user.UserID,
+		Name:       user.Name,
+		Email:      user.Email,
+		Provider:   string(user.ProvCode),
+		ProviderID: user.ProvUID,
+		Avatar:     "/auth/assets/" + user.UserID + ".png?uptime=" + strconv.FormatInt(user.UpdatedAt, 10),
+		Labels:     labels,
+		CreatedAt:  FormatUnixTimestampToString(user.CreatedAt, time.RFC3339),
+		Banned:     user.IsBanned == 1,
+	}, nil
+}
+
 // ユーザーを更新する関数
 func UpdateUser(args UpdateUserData) error {
 	// ユーザーを取得
@@ -104,11 +136,13 @@ func UpdateUser(args UpdateUserData) error {
 	}
 
 	// 10mbまでの画像を保存
-	err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
+	if strings.HasPrefix(args.Avatar, "data:image/") {
+		err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
 
-	// エラー処理
-	if err != nil {
-		logger.PrintErr(err)
+		// エラー処理
+		if err != nil {
+			logger.PrintErr(err)
+		}
 	}
 
 	return nil
@@ -206,13 +240,13 @@ type BanArgs struct {
 	UserID   string //ユーザーID
 }
 
-func ToggleBan(args BanArgs) error {
+func ToggleBan(args BanArgs) (User, error) {
 	// ユーザーを取得する
 	user,result := models.GetUser(args.UserID)
 
 	// エラー処理
 	if result.Error != nil {
-		return result.Error
+		return User{}, result.Error
 	}
 
 	// BAN を切り替え
@@ -225,7 +259,12 @@ func ToggleBan(args BanArgs) error {
 	}
 
 	// ユーザーを更新する
-	return models.UpdateUser(user)
+	err := models.UpdateUser(user)
+	if err != nil {
+		return User{}, err
+	}
+
+	return GetUser(args.UserID)
 }
 
 // ここまで

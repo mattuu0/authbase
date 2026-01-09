@@ -5,6 +5,7 @@ import (
 	"auth/middlewares"
 	"html/template"
 	"io"
+	"net/http"
 	"path/filepath"
 
 	"github.com/labstack/echo/v4"

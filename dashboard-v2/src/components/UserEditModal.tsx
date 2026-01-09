@@ -15,9 +15,8 @@ import {
   Tag
 } from "lucide-react";
 import type { User, Label as LabelType } from "../lib/types";
-import { updateUser, deleteUser } from "../services/user-service";
+import { updateUser } from "../services/user-service";
 import { getLabels } from "../services/label-service";
-import { cn } from "../lib/utils";
 
 // プロバイダーの表示名マッピング
 const providerNames: Record<string, string> = {
@@ -41,7 +40,6 @@ export function UserEditModal({ user, isOpen, onClose, onUpdate, onDelete }: Use
   const [avatar, setAvatar] = useState("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [availableLabels, setAvailableLabels] = useState<LabelType[]>([]);
-  const [loadingLabels, setLoadingLabels] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<Record<string, boolean>>({});
@@ -56,13 +54,10 @@ export function UserEditModal({ user, isOpen, onClose, onUpdate, onDelete }: Use
     
     const fetchLabels = async () => {
       try {
-        setLoadingLabels(true);
         const labels = await getLabels();
         setAvailableLabels(labels);
       } catch (error) {
         console.error("Failed to fetch labels:", error);
-      } finally {
-        setLoadingLabels(false);
       }
     };
 
@@ -250,10 +245,10 @@ export function UserEditModal({ user, isOpen, onClose, onUpdate, onDelete }: Use
                   ラベル
                 </label>
                 <div className="flex flex-wrap gap-1.5 mb-2 max-h-[100px] overflow-y-auto p-1 border rounded-lg bg-gray-50/30 scrollbar-thin scrollbar-thumb-gray-200">
-                  {selectedLabels.length === 0 ? (
+                  {(!selectedLabels || selectedLabels.length === 0) ? (
                     <span className="text-xs text-gray-400 py-1 px-2">ラベルなし</span>
                   ) : (
-                    selectedLabels.map((label) => (
+                    selectedLabels.filter(label => label !== null && label !== undefined).map((label) => (
                       <span
                         key={label}
                         className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 border border-blue-100 h-6"
