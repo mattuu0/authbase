@@ -1,0 +1,34 @@
+name: Auth Service Tests
+
+on:
+  push:
+    paths:
+      - 'auth/src/**'
+  pull_request:
+    paths:
+      - 'auth/src/**'
+
+jobs:
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: auth/src
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.5'
+          cache-dependency-path: auth/src/go.sum
+
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v ./...
