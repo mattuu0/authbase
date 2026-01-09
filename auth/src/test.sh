@@ -180,24 +180,50 @@ main() {
     # 最終結果
     print_section "📈 Test Summary"
     
-    echo -e "${BLUE}${CLOCK} Total Time: $(calc_elapsed)${NC}"
+    local elapsed=$(calc_elapsed)
+    echo -e "${BLUE}${CLOCK} Total Time: ${elapsed}${NC}"
     echo -e "${BLUE}${PACKAGE} Total Test Suites: ${total_tests}${NC}"
     echo -e "${GREEN}${CHECK_MARK} Passed: ${passed_tests}${NC}"
     echo -e "${RED}${CROSS_MARK} Failed: ${failed_tests}${NC}"
     echo ""
     
+    # Markdown 出力
+    local summary_file="TEST_RESULT.md"
+    echo "# 🧪 Auth Service Test Report" > $summary_file
+    echo "" >> $summary_file
+    echo "## 📊 Summary" >> $summary_file
+    echo "| Metric | Value |" >> $summary_file
+    echo "| :--- | :--- |" >> $summary_file
+    echo "| ⏱️ Total Time | ${elapsed} |" >> $summary_file
+    echo "| 📦 Total Suites | ${total_tests} |" >> $summary_file
+    echo "| ✅ Passed | ${passed_tests} |" >> $summary_file
+    echo "| ❌ Failed | ${failed_tests} |" >> $summary_file
+    
     # 成功率計算
     if [ $total_tests -gt 0 ]; then
         local success_rate=$((passed_tests * 100 / total_tests))
         echo -e "${CYAN}Success Rate: ${success_rate}%${NC}"
+        echo "| 📈 Success Rate | ${success_rate}% |" >> $summary_file
         
         if [ $success_rate -eq 100 ]; then
             echo ""
             echo -e "${GREEN}${TROPHY}${TROPHY}${TROPHY} Perfect! All tests passed! ${TROPHY}${TROPHY}${TROPHY}${NC}"
+            echo "" >> $summary_file
+            echo "### 🎉 Result: Perfect!" >> $summary_file
+            echo "All tests passed successfully." >> $summary_file
+        else
+            echo "" >> $summary_file
+            echo "### ⚠️ Result: Needs Attention" >> $summary_file
+            echo "Some tests failed. Please check the logs." >> $summary_file
         fi
     fi
     
+    echo "" >> $summary_file
+    echo "---" >> $summary_file
+    echo "*Generated at: $(date '+%Y-%m-%d %H:%M:%S')*" >> $summary_file
+    
     echo ""
+    print_info "Test report generated: ${summary_file}"
     print_info "Test finished at: $(date '+%Y-%m-%d %H:%M:%S')"
     
     # 失敗があれば終了コード1を返す

@@ -26,17 +26,24 @@ jobs:
 
       - name: Run tests and extract coverage
         run: |
-          # コンテナを実行してカバレッジファイルを生成
-          docker run --name auth-test-container auth-test:latest go test -v -coverprofile=coverage.out -covermode=atomic ./...
+          # コンテナを実行してテストとカバレッジ、Markdownレポートを生成
+          # test.sh を実行するようにコマンドを変更
+          docker run --name auth-test-container auth-test:latest /bin/bash -c "chmod +x test.sh && ./test.sh && go test -v -coverprofile=coverage.out -covermode=atomic ./..."
           
-          # カバレッジファイルをホスト側にコピー
+          # 必要なファイルをホスト側にコピー
           docker cp auth-test-container:/root/src/coverage.out ./auth/src/coverage.out
+          docker cp auth-test-container:/root/src/TEST_RESULT.md ./auth/src/TEST_RESULT.md
+          
+          # GitHub Actions の Job Summary にレポートを追加
+          cat ./auth/src/TEST_RESULT.md >> $GITHUB_STEP_SUMMARY
           
           # コンテナを削除
           docker rm auth-test-container
 
-      - name: Upload coverage report
+      - name: Upload test artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: auth/src/coverage.out
+          name: test-results
+          path: |
+            auth/src/coverage.out
+            auth/src/TEST_RESULT.md
