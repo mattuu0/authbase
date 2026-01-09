@@ -67,15 +67,18 @@ func InitProviders() {
 	isGoogleEnabled := os.Getenv("GoogleClientID") != "" && os.Getenv("GoogleClientSecret") != ""
 
 	// Google
-	err := CreateProvider(&Provider{
-		ProviderName: "Google",
-		ClientID:     os.Getenv("GoogleClientID"),
-		ClientSecret: os.Getenv("GoogleClientSecret"),
-		CallbackURL:  os.Getenv("GoogleCallback"),
-		ProviderCode: Google,
-		IsEnabled:    BoolToInt(isGoogleEnabled),
-		Users:        []User{},
-	})
+	_, err := GetProvider(Google)
+	if err != nil {
+		err = CreateProvider(&Provider{
+			ProviderName: "Google",
+			ClientID:     os.Getenv("GoogleClientID"),
+			ClientSecret: os.Getenv("GoogleClientSecret"),
+			CallbackURL:  os.Getenv("GoogleCallback"),
+			ProviderCode: Google,
+			IsEnabled:    BoolToInt(isGoogleEnabled),
+			Users:        []User{},
+		})
+	}
 
 	// エラー処理
 	if err != nil {
@@ -86,15 +89,18 @@ func InitProviders() {
 	isGithubEnabled := os.Getenv("GithubClientID") != "" && os.Getenv("GithubClientSecret") != ""
 
 	// GitHub
-	err = CreateProvider(&Provider{
-		ProviderName: "GitHub",
-		ClientID:     os.Getenv("GithubClientID"),
-		ClientSecret: os.Getenv("GithubClientSecret"),
-		CallbackURL:  os.Getenv("GithubCallback"),
-		ProviderCode: Github,
-		IsEnabled:    BoolToInt(isGithubEnabled),
-		Users:        []User{},
-	})
+	_, err = GetProvider(Github)
+	if err != nil {
+		err = CreateProvider(&Provider{
+			ProviderName: "GitHub",
+			ClientID:     os.Getenv("GithubClientID"),
+			ClientSecret: os.Getenv("GithubClientSecret"),
+			CallbackURL:  os.Getenv("GithubCallback"),
+			ProviderCode: Github,
+			IsEnabled:    BoolToInt(isGithubEnabled),
+			Users:        []User{},
+		})
+	}
 
 	// エラー処理
 	if err != nil {
@@ -105,15 +111,18 @@ func InitProviders() {
 	isDiscordEnabled := os.Getenv("DiscordClientID") != "" && os.Getenv("DiscordClientSecret") != ""
 
 	// Discord
-	err = CreateProvider(&Provider{
-		ProviderName: "Discord",
-		ClientID:     os.Getenv("DiscordClientID"),
-		ClientSecret: os.Getenv("DiscordClientSecret"),
-		CallbackURL:  os.Getenv("DiscordCallback"),
-		ProviderCode: Discord,
-		IsEnabled:    BoolToInt(isDiscordEnabled),
-		Users:        []User{},
-	})
+	_, err = GetProvider(Discord)
+	if err != nil {
+		err = CreateProvider(&Provider{
+			ProviderName: "Discord",
+			ClientID:     os.Getenv("DiscordClientID"),
+			ClientSecret: os.Getenv("DiscordClientSecret"),
+			CallbackURL:  os.Getenv("DiscordCallback"),
+			ProviderCode: Discord,
+			IsEnabled:    BoolToInt(isDiscordEnabled),
+			Users:        []User{},
+		})
+	}
 
 	// エラー処理
 	if err != nil {
@@ -124,15 +133,18 @@ func InitProviders() {
 	isMicrosoftEnabled := os.Getenv("MicrosoftClientID") != "" && os.Getenv("MicrosoftClientSecret") != ""
 
 	// Microsoft
-	err = CreateProvider(&Provider{
-		ProviderName: "Microsoft",
-		ClientID:     os.Getenv("MicrosoftClientID"),
-		ClientSecret: os.Getenv("MicrosoftClientSecret"),
-		CallbackURL:  os.Getenv("MicrosoftCallback"),
-		ProviderCode: Microsoft,
-		IsEnabled:    BoolToInt(isMicrosoftEnabled),
-		Users:        []User{},
-	})
+	_, err = GetProvider(Microsoft)
+	if err != nil {
+		err = CreateProvider(&Provider{
+			ProviderName: "Microsoft",
+			ClientID:     os.Getenv("MicrosoftClientID"),
+			ClientSecret: os.Getenv("MicrosoftClientSecret"),
+			CallbackURL:  os.Getenv("MicrosoftCallback"),
+			ProviderCode: Microsoft,
+			IsEnabled:    BoolToInt(isMicrosoftEnabled),
+			Users:        []User{},
+		})
+	}
 
 	// エラー処理
 	if err != nil {
@@ -141,7 +153,7 @@ func InitProviders() {
 
 	// basic
 	// プロバイダを取得してみる
-	basicProvider, err := GetProvider(Basic)
+	_, err = GetProvider(Basic)
 
 	if err != nil {
 		// 取得できなかった場合は作成する
@@ -154,10 +166,6 @@ func InitProviders() {
 			IsEnabled:    1,
 			Users:        []User{},
 		})
-	} else {
-		// 取得できた場合は有効化する
-		basicProvider.IsEnabled = 1
-		err = dbconn.Save(basicProvider).Error
 	}
 
 	// エラー処理
