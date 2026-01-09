@@ -60,6 +60,10 @@ export function UserBanModal({ user, isOpen, onClose, onConfirm }: UserBanModalP
 
           <div className="mt-6 rounded-xl bg-gray-50 p-4 border border-gray-100 space-y-2">
             <div className="flex justify-between text-sm">
+              <span className="text-gray-500">ID</span>
+              <span className="font-mono text-gray-900">{user.id}</span>
+            </div>
+            <div className="flex justify-between text-sm">
               <span className="text-gray-500">名前</span>
               <span className="font-semibold text-gray-900">{user.name}</span>
             </div>
