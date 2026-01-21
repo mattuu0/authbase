@@ -35,19 +35,24 @@ export async function searchUsers(query: string): Promise<User[]> {
   );
 }
 
-export async function createUser(_data: CreateUserRequest): Promise<User> {
-  // If the backend has a specific create user endpoint, use it.
-  // Based on init.go, there isn't a direct /api/user POST endpoint for admins yet,
-  // but there is /basic/signup. However, that might be for public use.
-  // For now, let's assume there's no admin create user API if it's not in init.go.
-  // Wait, I should check controllers/user.go to see if there's any hidden ones.
-  throw new Error("Create user API not implemented in backend yet");
+export async function createUser(data: CreateUserRequest): Promise<User> {
+  const response = await fetch("/auth/api/user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    credentials: "include"
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to create user");
+  }
+  return await response.json();
 }
 
 export async function deleteUser(userId: string): Promise<void> {
   const response = await fetch("/auth/api/user", {
     method: "DELETE",
-    headers: { 
+    headers: {
       "Content-Type": "application/json",
       "userid": userId
     },
