@@ -3,6 +3,8 @@ package services
 import (
 	"auth/logger"
 	"auth/models"
+	"auth/utils"
+	"errors"
 	"mime/multipart"
 	"os"
 	"strconv"
@@ -11,8 +13,8 @@ import (
 )
 
 type GetUserInfo struct {
-	UserID   string `json:"user_id"`
-	Name     string `json:"name"`
+	UserID string `json:"user_id"`
+	Name   string `json:"name"`
 }
 
 func GetInfo(userid string) (GetUserInfo, error) {
@@ -25,8 +27,8 @@ func GetInfo(userid string) (GetUserInfo, error) {
 	}
 
 	return GetUserInfo{
-		UserID:   user.UserID,
-		Name:     user.Name,
+		UserID: user.UserID,
+		Name:   user.Name,
 	}, nil
 }
 
@@ -137,7 +139,7 @@ func UpdateUser(args UpdateUserData) error {
 
 	// 10mbまでの画像を保存
 	if strings.HasPrefix(args.Avatar, "data:image/") {
-		err = ProcessAndSaveImage(IconDir + "/" + args.ID + ".png", args.Avatar, MaxImageSize)
+		err = ProcessAndSaveImage(IconDir+"/"+args.ID+".png", args.Avatar, MaxImageSize)
 
 		// エラー処理
 		if err != nil {
@@ -146,6 +148,46 @@ func UpdateUser(args UpdateUserData) error {
 	}
 
 	return nil
+}
+
+// 管理者がユーザーを作成する関数
+func CreateUser(args CreateBasicUserArgs) (User, error) {
+	// UUID を生成
+	uid := utils.GenID()
+
+	// 現在時刻を取得
+	now := utils.NowTime()
+
+	// メールアドレスの重複チェック
+	_, result := models.GetUserByEmail(args.Email)
+	if result.IsExists {
+		return User{}, errors.New("user already exists")
+	}
+
+	// パスワードをハッシュ化する
+	hashed, err := utils.HashPassword(args.Password)
+	if err != nil {
+		return User{}, err
+	}
+
+	// ユーザーを作成する
+	err = models.CreateUser(&models.User{
+		UserID:       uid,
+		Name:         args.Name,
+		Email:        args.Email,
+		ProvCode:     models.Basic,
+		ProvUID:      "",
+		PasswordHash: hashed,
+		CreatedAt:    now,
+		UpdatedAt:    now,
+	}, models.Basic)
+
+	if err != nil {
+		return User{}, err
+	}
+
+	// 作成したユーザーを取得して返す
+	return GetUser(uid)
 }
 
 // ここまで
@@ -242,7 +284,7 @@ type BanArgs struct {
 
 func ToggleBan(args BanArgs) (User, error) {
 	// ユーザーを取得する
-	user,result := models.GetUser(args.UserID)
+	user, result := models.GetUser(args.UserID)
 
 	// エラー処理
 	if result.Error != nil {
@@ -271,7 +313,7 @@ func ToggleBan(args BanArgs) (User, error) {
 
 // ここからユーザーのアイコンを更新
 type UpdateIconArgs struct {
-	UserID string
+	UserID  string
 	ImgFile multipart.File
 }
 
@@ -314,4 +356,5 @@ func GetIcon(userid string) (string, error) {
 
 	return "/auth/assets/" + user.UserID + ".png?uptime=" + strconv.FormatInt(user.UpdatedAt, 10), nil
 }
+
 // ここまで

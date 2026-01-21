@@ -9,6 +9,31 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func CreateUser(ctx echo.Context) error {
+	// リクエストボディを取得
+	args := BasicUserArgs{}
+
+	// bind する
+	if err := ctx.Bind(&args); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+
+	// ユーザーを作成する
+	user, err := services.CreateUser(services.CreateBasicUserArgs{
+		Name:     args.Name,
+		Email:    args.Email,
+		Password: args.Password,
+	})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr(err)
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusCreated, user)
+}
+
 func GetInfo(ctx echo.Context) error {
 	// UserID を取得
 	userID := ctx.Param("userid")
@@ -59,7 +84,7 @@ func UpdateUser(ctx echo.Context) error {
 	if err := services.UpdateUser(args); err != nil {
 		logger.PrintErr(err)
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
-	}	
+	}
 
 	// 更新後のユーザーを取得
 	user, err := services.GetUser(args.ID)
@@ -82,18 +107,17 @@ func DeleteOauth(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusInternalServerError,echo.Map{
-			"error" : err.Error(),
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"error": err.Error(),
 		})
 	}
 
-	return ctx.JSON(http.StatusOK,echo.Map{
-		"result" : "success",
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"result": "success",
 	})
 }
 
-
-func GetAllUsers(ctx echo.Context) (error) {
+func GetAllUsers(ctx echo.Context) error {
 	// サービスを呼び出す
 	users, err := services.GetUsers()
 
@@ -113,8 +137,8 @@ func ToggleBan(ctx echo.Context) error {
 
 	if err := ctx.Bind(&banArgs); err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusBadRequest,echo.Map{
-			"result" : err.Error(),
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"result": err.Error(),
 		})
 	}
 
@@ -124,8 +148,8 @@ func ToggleBan(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusInternalServerError,echo.Map{
-			"result" : err.Error(),
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"result": err.Error(),
 		})
 	}
 
@@ -143,8 +167,8 @@ func ChangeIcon(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusBadRequest,echo.Map{
-			"result" : err.Error(),
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"result": err.Error(),
 		})
 	}
 
@@ -154,15 +178,15 @@ func ChangeIcon(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusInternalServerError,echo.Map{
-			"result" : err.Error(),
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"result": err.Error(),
 		})
 	}
 
 	// アイコンを更新する
 	iconArgs := services.UpdateIconArgs{
-		UserID: userID,
-		ImgFile:   imgFile,
+		UserID:  userID,
+		ImgFile: imgFile,
 	}
 
 	// アイコンを更新する
@@ -171,13 +195,13 @@ func ChangeIcon(ctx echo.Context) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr(err)
-		return ctx.JSON(http.StatusInternalServerError,echo.Map{
-			"result" : err.Error(),
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"result": err.Error(),
 		})
 	}
 
-	return ctx.JSON(http.StatusOK,echo.Map{
-		"result" : "success",
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"result": "success",
 	})
 }
 

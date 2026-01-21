@@ -82,6 +82,9 @@ func SetupRouter(router *echo.Echo) {
 	// アイコンフォルダを配信する
 	router.Static("/assets", "./assets/icons")
 
+	// 静的なアセットフォルダを公開
+	router.Static("/public", "public")
+
 	// ログイン
 	router.GET("/login", controllers.LoginPage)
 	router.GET("/login/providers", controllers.GetPublicProviders)
@@ -99,7 +102,7 @@ func SetupRouter(router *echo.Echo) {
 	router.POST("/icon", controllers.ChangeIcon, middlewares.RequireAuth)
 
 	// アイコンを取得する
-	router.GET("/icon/:userid",controllers.GetIcon)
+	router.GET("/icon/:userid", controllers.GetIcon)
 
 	// ログアウト
 	router.POST("/logout", controllers.Logout, middlewares.RequireAuth)
@@ -132,6 +135,9 @@ func SetupRouter(router *echo.Echo) {
 		{
 			// ユーザー一覧を取得する
 			userg.GET("/all", controllers.GetAllUsers)
+
+			// ユーザーを作成する
+			userg.POST("", controllers.CreateUser)
 
 			// ユーザーを更新する
 			userg.PUT("", controllers.UpdateUser)
