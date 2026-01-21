@@ -1,53 +1,42 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン中 - AuthBase</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .spinner {
-            border: 3px solid rgba(59, 130, 246, 0.1);
-            border-radius: 50%;
-            border-top: 3px solid #3b82f6;
-            width: 48px;
-            height: 48px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>認証完了 - AuthBase</title>
+    <link rel="stylesheet" href="../../../public/shared/auth.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 
-    <div class="flex flex-col items-center space-y-6 text-center">
-        <div class="spinner"></div>
-        <div>
-            <h1 class="text-xl font-semibold text-slate-800">ログイン情報を処理しています</h1>
-            <p class="text-slate-500 mt-2">少々お待ちください...</p>
+<body class="auth-container">
+    <div class="auth-card" style="text-align: center;">
+        <div class="auth-header">
+            <div class="auth-logo-wrapper">
+                <div class="spinner" style="width: 2.5rem; height: 2.5rem; border-width: 4px;"></div>
+            </div>
+            <h1 class="auth-title">認証を処理中</h1>
+            <p class="auth-subtitle">安全にアカウントへ接続しています</p>
         </div>
+
+        <div style="display: none;" id="token">{{index . "token"}}</div>
+        <div style="display: none;" id="isPopup">{{index . "isPopup"}}</div>
+        <div style="display: none;" id="isMobile">{{index . "isMobile"}}</div>
+
+        <p class="footer-text">まもなくリダイレクトされます...</p>
     </div>
 
-    <div style="display: none;" id="token">{{index . "token"}}</div>
-    <div style="display: none;" id="isPopup">{{index . "isPopup"}}</div>
-    <div style="display: none;" id="isMobile">{{index . "isMobile"}}</div>
-
+    <script src="../../../public/shared/auth.js"></script>
     <script>
         const token = document.getElementById('token').textContent;
         const isPopup = document.getElementById('isPopup').textContent;
         const isMobile = document.getElementById('isMobile').textContent;
 
-        if (token) {
+        if (token && token !== "<no value>") {
             localStorage.setItem('token', token);
-            // ログイン直後であることを記録（自動起動を抑制するため）
             sessionStorage.setItem('justLoggedIn', 'true');
         }
 
-        setTimeout(function() {
+        setTimeout(function () {
             if (isPopup === "1") {
                 if (window.opener) {
                     window.opener.postMessage("Login-Success", "*");
@@ -56,17 +45,19 @@
                 return;
             }
 
-            let redirectUrl = "../../login";
+            // ベースパスが変わる可能性を考慮
+            let redirectUrl = "../../../login";
             const params = [];
             if (isMobile === "1") params.push("ismobile=1");
             if (isPopup === "1") params.push("ispopup=1");
-            
+
             if (params.length > 0) {
                 redirectUrl += "?" + params.join("&");
             }
 
             window.location.href = redirectUrl;
-        }, 600);
+        }, 800);
     </script>
 </body>
+
 </html>
