@@ -207,7 +207,7 @@
 
             if (isMobile) {
                 // ブリッジトークンを発行してアプリへリダイレクト
-                fetch('/bridge/issue', {
+                fetch('./bridge/issue', {
                     method: 'POST',
                     headers: { 'Authorization': token }
                 })
