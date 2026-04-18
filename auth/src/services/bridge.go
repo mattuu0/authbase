@@ -22,8 +22,8 @@ type BridgeTokenClaims struct {
 // ※本来は環境変数から取得して管理する必要があります。
 var bridgeTokenSecret = []byte("super-secret-bridge-key")
 
-// IssueBridgeToken は指定されたユーザーIDとアクセストークンを関連付け、5分間有効な一時的JWTブリッジトークンを発行します。
-func IssueBridgeToken(userID string, accessToken string) (string, error) {
+// IssueBridgeToken は指定されたユーザーIDに対して、5分間有効な一時的JWTブリッジトークンを発行します。
+func IssueBridgeToken(userID string, refreshToken string) (string, error) {
 	// トークンを一意に識別するためのUUIDを生成
 	tokenID := uuid.New().String()
 	expiresAt := time.Now().Add(5 * time.Minute)
@@ -45,13 +45,13 @@ func IssueBridgeToken(userID string, accessToken string) (string, error) {
 		return "", err
 	}
 
-	// 使い捨て管理のため、トークンID（UUID）とアクセストークンをDBに保存
+	// 使い捨て管理のため、トークンID（UUID）とリフレッシュトークンをDBに保存
 	bridgeToken := models.BridgeToken{
-		Token:       tokenID,
-		UserID:      userID,
-		ExpiresAt:   expiresAt,
-		IsUsed:      false,
-		AccessToken: accessToken,
+		Token:        tokenID,
+		UserID:       userID,
+		ExpiresAt:    expiresAt,
+		IsUsed:       false,
+		RefreshToken: refreshToken, // リフレッシュトークンを保存
 	}
 
 	// DBへの保存処理
@@ -62,7 +62,7 @@ func IssueBridgeToken(userID string, accessToken string) (string, error) {
 	return tokenString, nil
 }
 
-// ExchangeBridgeToken はJWT形式のブリッジトークンを検証し、未使用であれば保持されていたアクセストークンとリフレッシュトークンを返却します。
+// ExchangeBridgeToken はJWT形式のブリッジトークンを検証し、未使用であればアクセストークンと保存されていたリフレッシュトークンを返却します。
 func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 	// 1. JWTの署名と形式を検証
 	token, err := jwt.ParseWithClaims(tokenString, &BridgeTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -90,19 +90,15 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		return nil, fmt.Errorf("トークンの更新に失敗しました: %v", err)
 	}
 
-	// 4. セッションからリフレッシュトークンを生成
-	refreshToken, err := NewSession(SessionArgs{
-		UserID:    claims.UserID,
-		RemoteIP:  "mobile-client",
-		UserAgent: "mobile-client",
-	})
+	// 4. 新しいアクセストークンを生成
+	accessToken, err := GetAccessToken(claims.UserID)
 	if err != nil {
 		return nil, err
 	}
 
-	// 5. 保存されていたアクセストークンとリフレッシュトークンを返却
+	// 5. 保存されていたリフレッシュトークンと新しいアクセストークンを返却
 	return map[string]string{
-		"access_token":  bridgeToken.AccessToken,
-		"refresh_token": refreshToken,
+		"access_token":  accessToken,
+		"refresh_token": bridgeToken.RefreshToken,
 	}, nil
 }

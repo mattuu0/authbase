@@ -8,20 +8,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// IssueBridgeToken はログイン済みセッションからユーザーを取得し、アクセストークンを関連付けたブリッジトークンを発行します
+// IssueBridgeToken はログイン済みセッションからユーザーを取得し、リフレッシュトークンを関連付けたブリッジトークンを発行します
 func IssueBridgeToken(ctx echo.Context) error {
 	session, ok := ctx.Get("session").(*models.Session)
 	if !ok {
 		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
 	}
 
-	// 現在のアクセストークンをリクエストヘッダー等から取得
-	accessToken := ctx.Request().Header.Get("Authorization")
-	if len(accessToken) > 7 && accessToken[:7] == "Bearer " {
-		accessToken = accessToken[7:]
+	// 現在のリフレッシュトークン（セッション）をリクエストクッキー等から取得
+	// ※既存のセッション管理方式に合わせて取得
+	refreshToken, err := ctx.Cookie("sessionid") // 仮定：sessionid クッキーから取得
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "refresh token not found"})
 	}
 
-	token, err := services.IssueBridgeToken(session.UserID, accessToken)
+	token, err := services.IssueBridgeToken(session.UserID, refreshToken.Value)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to issue bridge token"})
 	}
