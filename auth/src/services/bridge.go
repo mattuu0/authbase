@@ -44,13 +44,11 @@ func IssueBridgeToken(userID string, refreshToken string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	// 使い捨て管理のため、トークンID（UUID）とリフレッシュトークンをDBに保存
 	bridgeToken := models.BridgeToken{
 		Token:        tokenID,
 		UserID:       userID,
 		ExpiresAt:    expiresAt,
-		IsUsed:       false,
 		RefreshToken: refreshToken, // リフレッシュトークンを保存
 	}
 
@@ -77,14 +75,14 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		return nil, errors.New("トークンクレームの解析に失敗しました")
 	}
 
-	// 2. DB上でトークンが未使用かつ存在することを確認
+	// 2. DB上でトークンが存在することを確認（存在すれば有効）
 	var bridgeToken models.BridgeToken
-	err = models.GetDB().Where("token = ? AND is_used = ?", claims.TokenID, false).First(&bridgeToken).Error
+	err = models.GetDB().Where("token = ?", claims.TokenID).First(&bridgeToken).Error
 	if err != nil {
-		return nil, errors.New("トークンは既に使用済みか存在しません")
+		return nil, errors.New("トークンは無効か、既に使用済みです")
 	}
 
-	// 3. トークンをDBから物理削除（使い捨て・不要になったトークンのクリーンアップ）
+	// 3. トークンをDBから物理削除（使い捨て・存在自体を無効化）
 	if err := models.GetDB().Delete(&bridgeToken).Error; err != nil {
 		return nil, fmt.Errorf("トークンの削除に失敗しました: %v", err)
 	}
@@ -100,4 +98,4 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		"access_token":  accessToken,
 		"refresh_token": bridgeToken.RefreshToken,
 	}, nil
-	}
+}

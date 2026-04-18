@@ -11,6 +11,5 @@ type BridgeToken struct {
 	Token        string    `gorm:"primaryKey;index"`
 	UserID       string    `gorm:"index"`
 	ExpiresAt    time.Time
-	IsUsed       bool      `gorm:"default:false"`
 	RefreshToken string    `gorm:"type:text"`
 }
