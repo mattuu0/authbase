@@ -218,7 +218,10 @@
                         document.getElementById('loading-screen').classList.add('hidden');
                         document.getElementById('bridge-card').classList.remove('hidden');
                         
-                        // 0.5秒後にメッセージを更新
+                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
+                        document.getElementById('app-link').href = url;
+                        
+                        // 0.5秒後にメッセージを更新し、リダイレクト実行
                         setTimeout(() => {
                             document.querySelector('.auth-title').innerText = "ログイン完了";
                             document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
