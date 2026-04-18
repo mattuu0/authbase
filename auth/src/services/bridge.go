@@ -87,12 +87,6 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		return nil, fmt.Errorf("トークンの削除に失敗しました: %v", err)
 	}
 
-	// 4. 新しいアクセストークンを生成
-	accessToken, err := GetAccessToken(claims.UserID)
-	if err != nil {
-		return nil, err
-	}
-
 	// 5. 保存されていたリフレッシュトークンのみを返却
 	return map[string]string{
 		"refresh_token": bridgeToken.RefreshToken,
