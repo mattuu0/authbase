@@ -1,0 +1,39 @@
+package controllers
+
+import (
+	"auth/models"
+	"auth/services"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+// IssueBridgeToken はログイン済みセッションからユーザーを取得し、ブリッジトークンを発行します
+func IssueBridgeToken(ctx echo.Context) error {
+	session, ok := ctx.Get("session").(*models.Session)
+	if !ok {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
+	}
+
+	token, err := services.IssueBridgeToken(session.UserID)
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to issue bridge token"})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"bridge_token": token})
+}
+
+// ExchangeBridgeToken はクエリパラメータから受け取ったブリッジトークンを検証し、アクセストークンを返却します
+func ExchangeBridgeToken(ctx echo.Context) error {
+	token := ctx.QueryParam("bridgetoken")
+	if token == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "token is required"})
+	}
+
+	accessToken, err := services.ExchangeBridgeToken(token)
+	if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"access_token": accessToken})
+}
