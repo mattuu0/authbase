@@ -222,15 +222,8 @@
                         setTimeout(() => {
                             document.querySelector('.auth-title').innerText = "ログイン完了";
                             document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
-                        }, 500);
-                        
-                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
-                        document.getElementById('app-link').href = url;
-                        
-                        // 2秒後にリダイレクト
-                        setTimeout(() => {
                             window.location.href = url;
-                        }, 2000);
+                        }, 500);
                     } else {
                         throw new Error("Token missing");
                     }
