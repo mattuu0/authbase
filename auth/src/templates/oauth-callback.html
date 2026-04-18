@@ -34,6 +34,9 @@
         if (token && token !== "<no value>") {
             localStorage.setItem('token', token);
             sessionStorage.setItem('justLoggedIn', 'true');
+            if (isMobile === "1") {
+                sessionStorage.setItem('isMobile', '1');
+            }
         }
 
         setTimeout(function () {
@@ -54,6 +57,7 @@
             if (params.length > 0) {
                 redirectUrl += "?" + params.join("&");
             }
+            console.log("Redirecting to:", redirectUrl);
 
             window.location.href = redirectUrl;
         }, 800);

@@ -43,43 +43,12 @@ func Logout(ctx echo.Context) error {
 
 
 func LoginPage(ctx echo.Context) error {
-
-
-
 	isPopup := ctx.QueryParam("ispopup")
-
-
-
 	isMobile := ctx.QueryParam("ismobile")
 
-
-
-
-
-
-
 	return ctx.Render(http.StatusOK, "login.html", map[string]interface{}{
-
-
-
 		"IsPopup":      isPopup,
-
-
-
 		"IsMobile":     isMobile,
-
-
-
 		"CustomScheme": CUSTOM_SCHEME,
-
-
-
 	})
-
-
-
 }
-
-
-
-

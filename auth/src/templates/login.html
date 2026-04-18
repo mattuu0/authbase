@@ -143,23 +143,8 @@
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
             </div>
-            <h1 class="auth-title">ログイン完了</h1>
-            <p class="auth-subtitle">正常にログインできました</p>
-        </div>
-
-        <div id="user-details" style="background: rgba(240, 249, 255, 0.5); border: 1px solid #bae6fd; border-radius: 1rem; padding: 1.25rem; margin: 1.5rem 0; text-align: left;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">User</span>
-                <span style="font-family: monospace; font-size: 0.875rem;" id="user-name"></span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">ID</span>
-                <span style="font-family: monospace; font-size: 0.875rem;" id="user-id"></span>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Provider</span>
-                <span style="font-family: monospace; font-size: 0.875rem;" id="user-provider"></span>
-            </div>
+            <h1 class="auth-title">おかえりなさい！</h1>
+            <p class="auth-subtitle">認証はすでに完了しています</p>
         </div>
 
         <a id="app-link" href="#" class="btn-primary" style="text-decoration: none;">
@@ -167,7 +152,7 @@
         </a>
 
         <div style="margin-top: 1.5rem;">
-            <button onclick="logoutAndReload()"
+            <button onclick="location.reload()"
                 style="background: none; border: none; font-size: 0.875rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">やり直す</button>
         </div>
 
@@ -183,6 +168,11 @@
         async function init() {
             // ローディングを少し見せる
             await new Promise(r => setTimeout(r, 600));
+
+            // OAuthコールバックから引き継がれた場合、sessionStorageに保存
+            if (isMobileParam === "1") {
+                sessionStorage.setItem('isMobile', '1');
+            }
 
             const token = localStorage.getItem('token');
             const isValid = await verifyToken(token);
@@ -210,21 +200,16 @@
             } catch (e) { return false; }
         }
 
-        async function showBridge() {
+        function showBridge() {
             const token = localStorage.getItem('token');
-            const url = isMobileParam === "1" ? `${customScheme}://?token=${token}` : '/statics/home.html';
-
-            // ユーザー情報の取得
-            try {
-                const response = await fetch('./me', { headers: { 'Authorization': token } });
-                if (response.ok) {
-                    const user = await response.json();
-                    const userId = user.user_id || 'N/A';
-                    document.getElementById('user-id').textContent = userId.length > 8 ? userId.substring(0, 8) + '...' : userId;
-                    document.getElementById('user-name').textContent = user.name || 'N/A';
-                    document.getElementById('user-provider').textContent = user.prov_code || 'N/A';
-                }
-            } catch (e) { console.error('Failed to fetch user', e); }
+            // sessionStorage を優先して判定
+            const isMobile = sessionStorage.getItem('isMobile') === "1" || isMobileParam === "1";
+            let url = isMobile ? `${customScheme}://?token=${token}` : '/statics/home.html';
+            
+            if (isMobile) {
+                const separator = url.includes('?') ? '&' : '?';
+                url += separator + "ismobile=1";
+            }
 
             document.getElementById('loading-screen').classList.add('hidden');
             document.getElementById('bridge-card').classList.remove('hidden');
@@ -235,6 +220,8 @@
                 window.location.href = url;
             } else {
                 sessionStorage.removeItem('justLoggedIn');
+                // セッションストレージは維持しておくか、必要に応じて削除
+                // sessionStorage.removeItem('isMobile');
             }
         }
 
