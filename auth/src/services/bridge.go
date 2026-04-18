@@ -84,10 +84,9 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		return nil, errors.New("トークンは既に使用済みか存在しません")
 	}
 
-	// 3. トークンを即座に使用済みに更新
-	bridgeToken.IsUsed = true
-	if err := models.GetDB().Save(&bridgeToken).Error; err != nil {
-		return nil, fmt.Errorf("トークンの更新に失敗しました: %v", err)
+	// 3. トークンをDBから物理削除（使い捨て・不要になったトークンのクリーンアップ）
+	if err := models.GetDB().Delete(&bridgeToken).Error; err != nil {
+		return nil, fmt.Errorf("トークンの削除に失敗しました: %v", err)
 	}
 
 	// 4. 新しいアクセストークンを生成
@@ -101,4 +100,4 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 		"access_token":  accessToken,
 		"refresh_token": bridgeToken.RefreshToken,
 	}, nil
-}
+	}
