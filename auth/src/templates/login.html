@@ -214,13 +214,18 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.bridge_token) {
-                        // 完了表示を表示
+                        // 完了画面へ切り替え
+                        document.getElementById('loading-screen').classList.add('hidden');
+                        document.getElementById('bridge-card').classList.remove('hidden');
+                        
                         document.querySelector('.auth-title').innerText = "ログイン完了";
                         document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
                         
+                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
+                        document.getElementById('app-link').href = url;
+                        
                         // 2秒間表示してからリダイレクト
                         setTimeout(() => {
-                            const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
                             window.location.href = url;
                         }, 2000);
                     } else {
@@ -229,6 +234,8 @@
                 })
                 .catch(e => {
                     console.error('Failed to issue bridge token', e);
+                    document.getElementById('loading-screen').classList.remove('hidden');
+                    document.querySelector('.auth-title').innerText = "エラー";
                     document.querySelector('.auth-subtitle').innerText = "認証情報の取得に失敗しました。";
                 });
                 return;
