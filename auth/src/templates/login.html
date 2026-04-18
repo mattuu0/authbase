@@ -28,7 +28,7 @@
                 </svg>
             </div>
             <h1 class="auth-title">AuthBase</h1>
-            <p id="auth-subtitle" class="auth-subtitle">おかえりなさい、サインインしてください</p>
+            <p id="auth-subtitle" class="auth-subtitle">AuthBaseにログイン</p>
         </header>
 
         {{if .Error}}
@@ -73,7 +73,7 @@
         </div>
 
         <!-- ログインフォーム -->
-        <form id="login-form" action="./basic/login" method="POST">
+        <form id="login-form" onsubmit="handleAuthSubmit(event, './basic/login')">
             <div class="input-group">
                 <label class="input-label" for="login-email">メールアドレス</label>
                 <input type="email" id="login-email" name="email" required class="input-field"
@@ -99,7 +99,7 @@
         </form>
 
         <!-- 新規登録フォーム -->
-        <form id="signup-form" action="./basic/signup" method="POST" class="hidden">
+        <form id="signup-form" onsubmit="handleAuthSubmit(event, './basic/signup')" class="hidden">
             <div class="input-group">
                 <label class="input-label" for="signup-name">お名前</label>
                 <input type="text" id="signup-name" name="name" required class="input-field" placeholder="山田 太郎">
@@ -143,8 +143,8 @@
                     <line x1="10" y1="14" x2="21" y2="3"></line>
                 </svg>
             </div>
-            <h1 class="auth-title">おかえりなさい！</h1>
-            <p class="auth-subtitle">認証はすでに完了しています</p>
+            <h1 class="auth-title">ログイン完了</h1>
+            <p class="auth-subtitle">正常にログインできました</p>
         </div>
 
         <a id="app-link" href="#" class="btn-primary" style="text-decoration: none;">
@@ -152,7 +152,7 @@
         </a>
 
         <div style="margin-top: 1.5rem;">
-            <button onclick="location.reload()"
+            <button onclick="logoutAndReload()"
                 style="background: none; border: none; font-size: 0.875rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">やり直す</button>
         </div>
 
@@ -225,7 +225,7 @@
             } else {
                 loginForm.classList.remove('hidden');
                 signupForm.classList.add('hidden');
-                subtitle.innerText = 'おかえりなさい、サインインしてください';
+                subtitle.innerText = 'AuthBaseにログイン';
                 social.classList.remove('hidden');
             }
         }

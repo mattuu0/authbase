@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>認証完了 - AuthBase</title>
-    <link rel="stylesheet" href="../../../public/shared/auth.css">
+    <link rel="stylesheet" href="../public/shared/auth.css">
 </head>
 
 <body class="auth-container">
@@ -25,7 +25,7 @@
         <p class="footer-text">まもなくリダイレクトされます...</p>
     </div>
 
-    <script src="../../../public/shared/auth.js"></script>
+    <script src="../public/shared/auth.js"></script>
     <script>
         const token = document.getElementById('token').textContent;
         const isPopup = document.getElementById('isPopup').textContent;
@@ -46,7 +46,7 @@
             }
 
             // ベースパスが変わる可能性を考慮
-            let redirectUrl = "../../../login";
+            let redirectUrl = "../../login";
             const params = [];
             if (isMobile === "1") params.push("ismobile=1");
             if (isPopup === "1") params.push("ispopup=1");
