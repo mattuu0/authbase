@@ -214,11 +214,23 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.bridge_token) {
-                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
-                        window.location.href = url;
+                        // 完了表示を表示
+                        document.querySelector('.auth-title').innerText = "ログイン完了";
+                        document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
+                        
+                        // 2秒間表示してからリダイレクト
+                        setTimeout(() => {
+                            const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
+                            window.location.href = url;
+                        }, 2000);
+                    } else {
+                        throw new Error("Token missing");
                     }
                 })
-                .catch(e => console.error('Failed to issue bridge token', e));
+                .catch(e => {
+                    console.error('Failed to issue bridge token', e);
+                    document.querySelector('.auth-subtitle').innerText = "認証情報の取得に失敗しました。";
+                });
                 return;
             }
 
