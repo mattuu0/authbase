@@ -203,11 +203,12 @@ func DeleteUser(userid string) error {
 	}
 
 	// 画像ファイルを削除する
-	err := os.Remove(IconDir + "/" + user.UserID + ".png")
-
-	// エラー処理
-	if err != nil {
-		return err
+	iconPath := IconDir + "/" + user.UserID + ".png"
+	if _, err := os.Stat(iconPath); err == nil {
+		err := os.Remove(iconPath)
+		if err != nil {
+			return err
+		}
 	}
 
 	// ユーザーを削除する
