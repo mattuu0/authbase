@@ -218,13 +218,16 @@
                         document.getElementById('loading-screen').classList.add('hidden');
                         document.getElementById('bridge-card').classList.remove('hidden');
                         
-                        document.querySelector('.auth-title').innerText = "ログイン完了";
-                        document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
+                        // 0.5秒後にメッセージを更新
+                        setTimeout(() => {
+                            document.querySelector('.auth-title').innerText = "ログイン完了";
+                            document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
+                        }, 500);
                         
                         const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
                         document.getElementById('app-link').href = url;
                         
-                        // 2秒間表示してからリダイレクト
+                        // 2秒後にリダイレクト
                         setTimeout(() => {
                             window.location.href = url;
                         }, 2000);
