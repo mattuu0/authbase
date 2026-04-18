@@ -22,8 +22,8 @@ type BridgeTokenClaims struct {
 // ※本来は環境変数から取得して管理する必要があります。
 var bridgeTokenSecret = []byte("super-secret-bridge-key")
 
-// IssueBridgeToken は指定されたユーザーIDに対して、5分間有効な一時的JWTブリッジトークンを発行します。
-func IssueBridgeToken(userID string) (string, error) {
+// IssueBridgeToken は指定されたユーザーIDとアクセストークンを関連付け、5分間有効な一時的JWTブリッジトークンを発行します。
+func IssueBridgeToken(userID string, accessToken string) (string, error) {
 	// トークンを一意に識別するためのUUIDを生成
 	tokenID := uuid.New().String()
 	expiresAt := time.Now().Add(5 * time.Minute)
@@ -45,12 +45,13 @@ func IssueBridgeToken(userID string) (string, error) {
 		return "", err
 	}
 
-	// 使い捨て管理のため、トークンID（UUID）をDBに保存
+	// 使い捨て管理のため、トークンID（UUID）とアクセストークンをDBに保存
 	bridgeToken := models.BridgeToken{
-		Token:     tokenID,
-		UserID:    userID,
-		ExpiresAt: expiresAt,
-		IsUsed:    false,
+		Token:       tokenID,
+		UserID:      userID,
+		ExpiresAt:   expiresAt,
+		IsUsed:      false,
+		AccessToken: accessToken,
 	}
 
 	// DBへの保存処理
@@ -61,39 +62,47 @@ func IssueBridgeToken(userID string) (string, error) {
 	return tokenString, nil
 }
 
-// ExchangeBridgeToken はJWT形式のブリッジトークンを検証し、未使用であれば本番用アクセストークンと交換します。
-func ExchangeBridgeToken(tokenString string) (string, error) {
+// ExchangeBridgeToken はJWT形式のブリッジトークンを検証し、未使用であれば保持されていたアクセストークンとリフレッシュトークンを返却します。
+func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 	// 1. JWTの署名と形式を検証
 	token, err := jwt.ParseWithClaims(tokenString, &BridgeTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return bridgeTokenSecret, nil
 	})
 	if err != nil || !token.Valid {
-		return "", errors.New("無効なブリッジトークンです")
+		return nil, errors.New("無効なブリッジトークンです")
 	}
 
 	claims, ok := token.Claims.(*BridgeTokenClaims)
 	if !ok {
-		return "", errors.New("トークンクレームの解析に失敗しました")
+		return nil, errors.New("トークンクレームの解析に失敗しました")
 	}
 
-	// 2. DB上でトークンが未使用かつ存在することを確認（使い捨ての検証）
+	// 2. DB上でトークンが未使用かつ存在することを確認
 	var bridgeToken models.BridgeToken
 	err = models.GetDB().Where("token = ? AND is_used = ?", claims.TokenID, false).First(&bridgeToken).Error
 	if err != nil {
-		return "", errors.New("トークンは既に使用済みか存在しません")
+		return nil, errors.New("トークンは既に使用済みか存在しません")
 	}
 
-	// 3. トークンを即座に使用済みに更新（二重利用防止）
+	// 3. トークンを即座に使用済みに更新
 	bridgeToken.IsUsed = true
 	if err := models.GetDB().Save(&bridgeToken).Error; err != nil {
-		return "", fmt.Errorf("トークンの更新に失敗しました: %v", err)
+		return nil, fmt.Errorf("トークンの更新に失敗しました: %v", err)
 	}
 
-	// 4. 検証成功につき、本番用のアクセストークンを生成して返却
-	accessToken, err := GetAccessToken(claims.UserID)
+	// 4. セッションからリフレッシュトークンを生成
+	refreshToken, err := NewSession(SessionArgs{
+		UserID:    claims.UserID,
+		RemoteIP:  "mobile-client",
+		UserAgent: "mobile-client",
+	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return accessToken, nil
+	// 5. 保存されていたアクセストークンとリフレッシュトークンを返却
+	return map[string]string{
+		"access_token":  bridgeToken.AccessToken,
+		"refresh_token": refreshToken,
+	}, nil
 }

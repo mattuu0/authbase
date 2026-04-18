@@ -8,14 +8,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// IssueBridgeToken はログイン済みセッションからユーザーを取得し、ブリッジトークンを発行します
+// IssueBridgeToken はログイン済みセッションからユーザーを取得し、アクセストークンを関連付けたブリッジトークンを発行します
 func IssueBridgeToken(ctx echo.Context) error {
 	session, ok := ctx.Get("session").(*models.Session)
 	if !ok {
 		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
 	}
 
-	token, err := services.IssueBridgeToken(session.UserID)
+	// 現在のアクセストークンをリクエストヘッダー等から取得
+	accessToken := ctx.Request().Header.Get("Authorization")
+	if len(accessToken) > 7 && accessToken[:7] == "Bearer " {
+		accessToken = accessToken[7:]
+	}
+
+	token, err := services.IssueBridgeToken(session.UserID, accessToken)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to issue bridge token"})
 	}
