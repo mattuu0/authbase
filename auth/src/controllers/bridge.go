@@ -23,14 +23,19 @@ func IssueBridgeToken(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, echo.Map{"bridge_token": token})
 }
 
-// ExchangeBridgeToken はクエリパラメータから受け取ったブリッジトークンを検証し、アクセストークンを返却します
+// ExchangeBridgeToken は Authorization ヘッダーから受け取ったJWT形式のブリッジトークンを検証し、アクセストークンを返却します
 func ExchangeBridgeToken(ctx echo.Context) error {
-	token := ctx.QueryParam("bridgetoken")
-	if token == "" {
-		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "token is required"})
+	bridgeTokenString := ctx.Request().Header.Get("Authorization")
+	if bridgeTokenString == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "Authorization header is required"})
 	}
 
-	accessToken, err := services.ExchangeBridgeToken(token)
+	// "Bearer " プレフィックスがある場合は削除
+	if len(bridgeTokenString) > 7 && bridgeTokenString[:7] == "Bearer " {
+		bridgeTokenString = bridgeTokenString[7:]
+	}
+
+	accessToken, err := services.ExchangeBridgeToken(bridgeTokenString)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": err.Error()})
 	}

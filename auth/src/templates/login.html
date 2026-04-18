@@ -204,13 +204,25 @@
             const token = localStorage.getItem('token');
             // sessionStorage を優先して判定
             const isMobile = sessionStorage.getItem('isMobile') === "1" || isMobileParam === "1";
-            let url = isMobile ? `${customScheme}://?token=${token}` : '/statics/home.html';
-            
+
             if (isMobile) {
-                const separator = url.includes('?') ? '&' : '?';
-                url += separator + "ismobile=1";
+                // ブリッジトークンを発行してアプリへリダイレクト
+                fetch('/bridge/issue', {
+                    method: 'POST',
+                    headers: { 'Authorization': token }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.bridge_token) {
+                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
+                        window.location.href = url;
+                    }
+                })
+                .catch(e => console.error('Failed to issue bridge token', e));
+                return;
             }
 
+            const url = '/statics/home.html';
             document.getElementById('loading-screen').classList.add('hidden');
             document.getElementById('bridge-card').classList.remove('hidden');
             document.getElementById('app-link').href = url;
@@ -220,8 +232,6 @@
                 window.location.href = url;
             } else {
                 sessionStorage.removeItem('justLoggedIn');
-                // セッションストレージは維持しておくか、必要に応じて削除
-                // sessionStorage.removeItem('isMobile');
             }
         }
 

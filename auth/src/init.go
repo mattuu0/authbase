@@ -95,8 +95,13 @@ func SetupRouter(router *echo.Echo) {
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
 
+	// ブリッジトークン
+	router.POST("/bridge/issue", controllers.IssueBridgeToken, middlewares.RequireAuth)
+	router.GET("/bridge/exchange", controllers.ExchangeBridgeToken)
+
 	// token を取得する
 	router.GET("/token", controllers.GetToken, middlewares.RequireAuth)
+
 
 	// アイコンを変更する
 	router.POST("/icon", controllers.ChangeIcon, middlewares.RequireAuth)

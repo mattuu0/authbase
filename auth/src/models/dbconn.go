@@ -72,6 +72,24 @@ func MigreteTable(db *gorm.DB) error {
 		return err
 	}
 
+	// マイグレーション
+	err = db.AutoMigrate(&BridgeToken{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("BridgeToken テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
+	// マイグレーション
+	err = db.AutoMigrate(&BridgeToken{})
+
+	// エラー処理
+	if err != nil {
+		logger.PrintErr("BridgeToken テーブルのマイグレーションに失敗しました", err)
+		return err
+	}
+
 	logger.Println("マイグレーションを実行しました")
 
 	return nil
