@@ -47,7 +47,7 @@ func ExchangeBridgeToken(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusOK, echo.Map{
-		"access_token":  tokens["access_token"],
+		"id_token":      tokens["id_token"],
 		"refresh_token": tokens["refresh_token"],
 	})
 }

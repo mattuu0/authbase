@@ -95,7 +95,7 @@ func ExchangeBridgeToken(tokenString string) (map[string]string, error) {
 
 	// 5. 保存されていたリフレッシュトークンと新しいアクセストークンを返却
 	return map[string]string{
-		"access_token":  accessToken,
+		"id_token":      accessToken,
 		"refresh_token": bridgeToken.RefreshToken,
 	}, nil
 }
