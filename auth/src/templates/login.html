@@ -1,279 +1,223 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ログイン - AuthBase</title>
     <link rel="stylesheet" href="./public/shared/auth.css">
-    <style>
-        .hidden {
-            display: none !important;
-        }
-    </style>
 </head>
+<body>
 
-<body class="auth-container">
-    <div id="loading-screen" class="auth-card" style="text-align: center;">
-        <div class="spinner" style="width: 3rem; height: 3rem; margin: 0 auto 1.5rem;"></div>
-        <p class="auth-subtitle">情報を確認しています...</p>
+    <!-- 1. 初期ローディング画面 -->
+    <div id="loading-screen" class="auth-card" style="text-align:center">
+        <div class="spinner" style="margin:12px auto 20px; width:40px; height:40px;"></div>
+        <div class="wordmark" style="font-size:16px">情報を確認しています</div>
+        <div class="tagline" style="font-size:12px">安全なセッションを確立中...</div>
     </div>
 
+    <!-- 2. メイン認証画面 -->
     <div id="auth-card-main" class="auth-card hidden">
-        <header class="auth-header">
-            <div class="auth-logo-wrapper">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                </svg>
-            </div>
-            <h1 class="auth-title">AuthBase</h1>
-            <p id="auth-subtitle" class="auth-subtitle">AuthBaseにログイン</p>
-        </header>
+        <div class="wordmark">AuthBase</div>
+        <p class="tagline" id="ui-subtitle">続行するにはログインしてください</p>
 
-        {{if .Error}}
-        <div class="error-badge" id="error-message">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <span>{{.Error}}</span>
-        </div>
-        {{end}}
-
-        <div id="social-login-section">
-            <div class="social-grid">
-                <a href="./oauth/google" class="btn-social">
-                    <svg width="18" height="18" viewBox="0 0 48 48">
-                        <path fill="#EA4335"
-                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                        <path fill="#4285F4"
-                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                        <path fill="#FBBC05"
-                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                        <path fill="#34A853"
-                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                    </svg>
-                    Google
-                </a>
-                <a href="./oauth/github" class="btn-social">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
-                    </svg>
-                    GitHub
-                </a>
-            </div>
-
-            <div class="divider">
-                <span class="divider-text">またはパスワードで</span>
-            </div>
+        <div id="social-area" class="social-area hidden">
+            <div id="social-grid" class="social-grid"></div>
         </div>
 
-        <!-- ログインフォーム -->
-        <form id="login-form" onsubmit="handleAuthSubmit(event, './basic/login')">
-            <div class="input-group">
-                <label class="input-label" for="login-email">メールアドレス</label>
-                <input type="email" id="login-email" name="email" required class="input-field"
-                    placeholder="name@example.com">
-            </div>
-            <div class="input-group">
-                <label class="input-label" for="login-password">パスワード</label>
-                <input type="password" id="login-password" name="password" required class="input-field"
-                    placeholder="••••••••">
-            </div>
-            <button type="submit" class="btn-primary">
-                <span>ログイン</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </button>
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <button type="button" onclick="toggleAuth('signup')"
-                    style="background: none; border: none; font-size: 0.875rem; font-weight: 700; color: var(--primary); cursor: pointer;">アカウントをお持ちでない方はこちら</button>
-            </div>
-        </form>
+        <div id="auth-divider" class="divider hidden">
+            <span class="divider-text">またはメールで続行</span>
+        </div>
 
-        <!-- 新規登録フォーム -->
-        <form id="signup-form" onsubmit="handleAuthSubmit(event, './basic/signup')" class="hidden">
-            <div class="input-group">
-                <label class="input-label" for="signup-name">お名前</label>
-                <input type="text" id="signup-name" name="name" required class="input-field" placeholder="山田 太郎">
-            </div>
-            <div class="input-group">
-                <label class="input-label" for="signup-email">メールアドレス</label>
-                <input type="email" id="signup-email" name="email" required class="input-field"
-                    placeholder="name@example.com">
-            </div>
-            <div class="input-group">
-                <label class="input-label" for="signup-password">パスワード</label>
-                <input type="password" id="signup-password" name="password" required class="input-field"
-                    placeholder="••••••••">
-            </div>
-            <button type="submit" class="btn-primary">
-                <span>アカウント作成</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </button>
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <button type="button" onclick="toggleAuth('login')"
-                    style="background: none; border: none; font-size: 0.875rem; font-weight: 700; color: var(--primary); cursor: pointer;">すでにアカウントをお持ちの方はこちら</button>
-            </div>
-        </form>
+        <div id="basic-auth-area" class="hidden">
+            <form id="login-form" onsubmit="handleAuthSubmit(event, './basic/login')">
+                <div class="form-group">
+                    <input type="email" name="email" class="input-field" placeholder="メールアドレス" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" class="input-field" placeholder="パスワード" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary">ログイン</button>
+                <a href="#" class="link-text" onclick="toggleAuth('signup')">アカウントを作成</a>
+            </form>
 
-        <p class="footer-text">&copy; 2026 AuthBase Project</p>
+            <form id="signup-form" class="hidden" onsubmit="handleAuthSubmit(event, './basic/signup')">
+                <div class="form-group">
+                    <input type="text" name="name" class="input-field" placeholder="お名前" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" name="email" class="input-field" placeholder="メールアドレス" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" class="input-field" placeholder="パスワード" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-primary">アカウント作成</button>
+                <a href="#" class="link-text" onclick="toggleAuth('login')">既存のアカウントでログイン</a>
+            </form>
+        </div>
     </div>
 
-    <!-- アプリを開くブリッジ画面 -->
-    <div id="bridge-card" class="auth-card hidden" style="text-align: center;">
-        <div class="auth-header">
-            <div class="auth-logo-wrapper"
-                style="background-color: #f0f9ff; color: var(--primary); box-shadow: none; border: 1px solid #e0f2fe;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-            </div>
-            <h1 class="auth-title">おかえりなさい！</h1>
-            <p class="auth-subtitle">認証はすでに完了しています</p>
+    <!-- 3. ログイン済み画面 (ブリッジ画面) -->
+    <div id="bridge-card" class="auth-card hidden">
+        <div class="wordmark" style="text-align:left">ログイン完了</div>
+        <p class="tagline" style="text-align:left; margin-bottom:24px;">アプリの準備が整いました</p>
+
+        <div class="info-panel">
+            <div class="info-row"><span class="info-label">メールアドレス</span><span class="info-value" id="u-email"></span></div>
+            <div class="info-row"><span class="info-label">ユーザー名前</span><span class="info-value" id="u-name"></span></div>
+            <div class="info-row"><span class="info-label">ログイン方法</span><span class="info-value" id="u-provider"></span></div>
         </div>
 
-        <a id="app-link" href="#" class="btn-primary" style="text-decoration: none;">
-            <span>アプリを開く</span>
-        </a>
-
-        <div style="margin-top: 1.5rem;">
-            <button onclick="location.reload()"
-                style="background: none; border: none; font-size: 0.875rem; font-weight: 700; color: var(--text-muted); cursor: pointer;">やり直す</button>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <a id="app-link-mobile" href="#" class="btn-primary" style="flex: 1; text-align: center; padding: 12px 0;">アプリに戻る</a>
+            <a id="app-link" href="/statics/home.html" class="btn-primary" style="flex: 1; text-align: center; padding: 12px 0;">Webで開く</a>
         </div>
-
-        <p class="footer-text">自動的に開かない場合はボタンを押してください</p>
     </div>
 
     <script src="./public/shared/auth.js"></script>
     <script>
-        const isPopupParam = "{{.IsPopup}}";
-        const isMobileParam = "{{.IsMobile}}";
         const customScheme = "{{.CustomScheme}}";
+        const isMobile = {{.IsMobile}} || JSON.parse(sessionStorage.getItem('isMobile') || 'false');
+        const isPopup = {{.IsPopup}} || JSON.parse(sessionStorage.getItem('isPopup') || 'false');
 
-        async function init() {
-            // ローディングを少し見せる
-            await new Promise(r => setTimeout(r, 600));
-
-            // OAuthコールバックから引き継がれた場合、sessionStorageに保存
-            if (isMobileParam === "1") {
-                sessionStorage.setItem('isMobile', '1');
-            }
-
-            const token = localStorage.getItem('token');
-            const isValid = await verifyToken(token);
-
-            if (isValid) {
-                if (isPopupParam === "1") {
-                    if (window.opener) window.opener.postMessage("Login-Success", "*");
-                    window.close(); return;
-                }
-
-                showBridge();
-                return;
-            }
-
-            // 未ログイン時：ログインフォームを表示
-            document.getElementById('loading-screen').classList.add('hidden');
-            document.getElementById('auth-card-main').classList.remove('hidden');
+        // クリック時にストレージをクリア
+        function clearSettings() {
+            sessionStorage.removeItem('isMobile');
+            sessionStorage.removeItem('isPopup');
         }
 
-        async function verifyToken(token) {
-            if (!token) return false;
-            try {
-                const response = await fetch('./me', { headers: { 'Authorization': token } });
-                return response.ok;
-            } catch (e) { return false; }
-        }
+        document.getElementById('app-link-mobile').addEventListener('click', clearSettings);
+        document.getElementById('app-link').addEventListener('click', clearSettings);
 
-        function showBridge() {
-            const token = localStorage.getItem('token');
-            // sessionStorage を優先して判定
-            const isMobile = sessionStorage.getItem('isMobile') === "1" || isMobileParam === "1";
-
-            if (isMobile) {
-                // ブリッジトークンを発行してアプリへリダイレクト
-                fetch('./bridge/issue', {
-                    method: 'POST',
-                    headers: { 'Authorization': token }
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.bridge_token) {
-                        // 完了画面へ切り替え
-                        document.getElementById('loading-screen').classList.add('hidden');
-                        document.getElementById('bridge-card').classList.remove('hidden');
-                        
-                        const url = `${customScheme}://?bridgetoken=${data.bridge_token}`;
-                        document.getElementById('app-link').href = url;
-                        
-                        // 0.5秒後にメッセージを更新し、リダイレクト実行
-                        setTimeout(() => {
-                            document.querySelector('.auth-title').innerText = "ログイン完了";
-                            document.querySelector('.auth-subtitle').innerText = "まもなくアプリへ切り替わります...";
-                            window.location.href = url;
-                        }, 500);
-                    } else {
-                        throw new Error("Token missing");
-                    }
-                })
-                .catch(e => {
-                    console.error('Failed to issue bridge token', e);
-                    document.getElementById('loading-screen').classList.remove('hidden');
-                    document.querySelector('.auth-title').innerText = "エラー";
-                    document.querySelector('.auth-subtitle').innerText = "認証情報の取得に失敗しました。";
-                });
-                return;
-            }
-
-            const url = '/statics/home.html';
-            document.getElementById('loading-screen').classList.add('hidden');
-            document.getElementById('bridge-card').classList.remove('hidden');
-            document.getElementById('app-link').href = url;
-
-            // 自動遷移試行
-            if (!sessionStorage.getItem('justLoggedIn')) {
-                window.location.href = url;
-            } else {
-                sessionStorage.removeItem('justLoggedIn');
-            }
-        }
+        const providerIcons = {
+            google: `<svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`,
+            github: `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>`
+        };
 
         function toggleAuth(target) {
-            const loginForm = document.getElementById('login-form');
-            const signupForm = document.getElementById('signup-form');
-            const subtitle = document.getElementById('auth-subtitle');
-            const social = document.getElementById('social-login-section');
+            const login = document.getElementById('login-form');
+            const signup = document.getElementById('signup-form');
+            const sub = document.getElementById('ui-subtitle');
+            const social = document.getElementById('social-area');
+            const divider = document.getElementById('auth-divider');
 
             if (target === 'signup') {
-                loginForm.classList.add('hidden');
-                signupForm.classList.remove('hidden');
-                subtitle.innerText = '新しいアカウントを作成しましょう';
+                login.classList.add('hidden');
+                signup.classList.remove('hidden');
+                sub.innerText = '新しいアカウントを作成しましょう';
                 social.classList.add('hidden');
+                if (divider) divider.classList.add('hidden');
             } else {
-                loginForm.classList.remove('hidden');
-                signupForm.classList.add('hidden');
-                subtitle.innerText = 'AuthBaseにログイン';
-                social.classList.remove('hidden');
+                login.classList.remove('hidden');
+                signup.classList.add('hidden');
+                sub.innerText = '続行するにはログインしてください';
+                if (document.getElementById('social-grid').children.length > 0) {
+                    social.classList.remove('hidden');
+                    if (divider) divider.classList.remove('hidden');
+                }
             }
+        }
+
+        async function setupProviders() {
+            try {
+                const response = await fetch('./login/providers');
+                const rawProviders = await response.json();
+                const providers = [...new Set(rawProviders)];
+                
+                const socialGrid = document.getElementById('social-grid');
+                const socialArea = document.getElementById('social-area');
+                const basicArea = document.getElementById('basic-auth-area');
+                const divider = document.getElementById('auth-divider');
+
+                let oAuthCount = 0;
+                let hasBasic = false;
+
+                providers.forEach(provider => {
+                    const name = provider.toLowerCase();
+                    if (name === 'basic') {
+                        hasBasic = true;
+                    } else if (providerIcons[name]) {
+                        oAuthCount++;
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-outline';
+                        btn.innerHTML = `${providerIcons[name]} <span>${provider.charAt(0).toUpperCase() + provider.slice(1)}</span>`;
+                        btn.onclick = () => window.location.href = `./oauth/${name}`;
+                        socialGrid.appendChild(btn);
+                    }
+                });
+
+                if (oAuthCount >= 2) socialGrid.classList.add('multi');
+                if (oAuthCount > 0) socialArea.classList.remove('hidden');
+                if (hasBasic) basicArea.classList.remove('hidden');
+                if (oAuthCount > 0 && hasBasic) divider.classList.remove('hidden');
+            } catch (err) {
+                console.error('Failed to load providers:', err);
+                document.getElementById('basic-auth-area').classList.remove('hidden');
+            }
+        }
+
+        async function init() {
+            const token = localStorage.getItem('token');
+            const loading = document.getElementById('loading-screen');
+            const main = document.getElementById('auth-card-main');
+            const bridge = document.getElementById('bridge-card');
+
+            // 設定を保存
+            sessionStorage.setItem('isMobile', JSON.stringify(isMobile));
+            sessionStorage.setItem('isPopup', JSON.stringify(isPopup));
+
+            // UIの状態を再調整
+            if (isMobile) {
+                document.getElementById('app-link-mobile').style.display = 'block';
+                document.getElementById('app-link').style.display = 'none';
+            } else {
+                document.getElementById('app-link-mobile').style.display = 'none';
+                document.getElementById('app-link').style.display = 'block';
+            }
+
+            await setupProviders();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect_uri');
+
+            if (token) {
+                const user = await fetch("./me", {
+                    headers: { 'Authorization': token },
+                    method: 'GET'
+                });
+
+                if (user.status === 200) {
+                    const userData = await user.json();
+                    document.getElementById('u-name').innerText = userData.name; 
+                    document.getElementById('u-email').innerText = userData.email;
+                    document.getElementById('u-provider').textContent = userData.prov_code;
+
+                    if (isMobile) {
+                        const bridgeResp = await fetch("./bridge/issue", {
+                            headers: { 'Authorization': token },
+                            method: 'POST'
+                        });
+                        if (bridgeResp.ok) {
+                            const bridgeData = await bridgeResp.json();
+                            const bridgeToken = bridgeData.bridge_token;
+                            const mobileLink = document.getElementById('app-link-mobile');
+                            const callbackScheme = `${customScheme}://callback`;
+                            mobileLink.href = redirectUrl ? 
+                                `${callbackScheme}?bridge_token=${bridgeToken}&next=${encodeURIComponent(redirectUrl)}` : 
+                                `${callbackScheme}?bridge_token=${bridgeToken}`;
+                        }
+                    }
+
+                    bridge.classList.remove('hidden');
+                    loading.classList.add('hidden');
+                    return;
+                }
+            }
+
+            main.classList.remove('hidden');
+            loading.classList.add('hidden');
         }
 
         window.onload = init;
     </script>
 </body>
-
 </html>
