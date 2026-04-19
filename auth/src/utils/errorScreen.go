@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ErrorScreen(ctx echo.Context, code int, ErrorID string, Error error, IsPopup bool) error {
+func ErrorScreen(ctx echo.Context, code int, ErrorID string, Error error, IsPopup bool,RelativePath string) error {
 	// エラー表示
 	logger.PrintErr2(2, "ErrorID: "+ErrorID, Error)
 
@@ -15,7 +15,7 @@ func ErrorScreen(ctx echo.Context, code int, ErrorID string, Error error, IsPopu
 		"ErrorID":      ErrorID,
 		"Error":        Error.Error(),
 		"isPopup":      BoolToInt(IsPopup),
-		"RelativePath": "../../",
+		"RelativePath": RelativePath,
 	})
 }
 

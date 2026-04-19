@@ -37,7 +37,7 @@ func StartOauth(ctx echo.Context, args OauthArgs) error {
 	// エラー処理
 	if err != nil {
 		// html を返す
-		return utils.ErrorScreen(ctx,http.StatusBadRequest,utils.GenID(),err,args.IsPopup)
+		return utils.ErrorScreen(ctx,http.StatusBadRequest,utils.GenID(),err,args.IsPopup,"../")
 	}
 
 	// リクエストを変更
