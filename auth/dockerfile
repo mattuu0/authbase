@@ -40,5 +40,6 @@ RUN CGO_ENABLED=0 go build -x --ldflags "-s -w" -o /go/bin/auth .
 FROM gcr.io/distroless/static-debian12 AS release
 COPY ./src/templates /templates
 COPY ./src/dashboard /dashboard
+COPY ./src/public/shared /public/shared
 COPY --from=build /go/bin/auth /
 CMD ["/auth"]
