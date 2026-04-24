@@ -73,7 +73,11 @@ function showError(message) {
 
     const container = document.getElementById('auth-card-main');
     const header = container.querySelector('.auth-header');
-    header.after(errorDiv);
+    if (header) {
+        header.after(errorDiv);
+    } else {
+        container.prepend(errorDiv);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
