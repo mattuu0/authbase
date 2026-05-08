@@ -60,10 +60,12 @@ services:
         depends_on:
             mysql:
                 condition: service_healthy
+            # postgres:
+            #     condition: service_healthy
             auth:
-
                 condition: service_started
-    # データベース
+
+    # データベース (MySQL)
     mysql:
         hostname: db
         image: mysql
@@ -80,6 +82,25 @@ services:
             interval: 5s
             timeout: 10s
             retries: 5
+
+    # データベース (PostgreSQL) - 使用する場合はこちらを有効化し、mysqlを無効化してください
+    # postgres:
+    #     hostname: db
+    #     image: postgres:latest
+    #     restart: always
+    #     environment:
+    #         POSTGRES_PASSWORD: root
+    #         POSTGRES_USER: root
+    #         POSTGRES_DB: authdb
+    #         TZ: Asia/Tokyo
+    #     volumes:
+    #         - pgdata:/var/lib/postgresql/data
+    #     healthcheck:
+    #         test: ["CMD-SHELL", "pg_isready -U root"]
+    #         interval: 5s
+    #         timeout: 10s
+    #         retries: 5
+
     redis:
         hostname: redis
         image: redis:latest
@@ -88,3 +109,4 @@ services:
             - 16380:6379
 volumes:
     dbdata:
+    pgdata:

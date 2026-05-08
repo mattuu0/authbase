@@ -3,11 +3,9 @@ package models
 import (
 	"log"
 	"os"
-	// "os"
 
-	// "gorm.io/driver/sqlite"
 	"gorm.io/driver/mysql"
-	// "gorm.io/driver/postgres"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -19,10 +17,22 @@ func Init() {
 	// データベースを開く
 	
 	// データベースの接続情報
+	dbType := os.Getenv("DATABASE_TYPE")
 	dsn := os.Getenv("DATABASE_DSN")
 
+	var dialector gorm.Dialector
+
+	switch dbType {
+	case "postgres":
+		dialector = postgres.Open(dsn)
+	case "mysql":
+		fallthrough
+	default:
+		dialector = mysql.Open(dsn)
+	}
+
 	// データベースを開く
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(dialector, &gorm.Config{})
 	if err != nil {
 		log.Fatal("failed to connect database")
 	}

@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -12,9 +13,22 @@ var (
 	dbconn *gorm.DB = nil
 )
 
-func OpenDB() (*gorm.DB,error) {
+func OpenDB() (*gorm.DB, error) {
+	dbType := os.Getenv("DB_TYPE")
 	dsn := os.Getenv("DB_DSN")
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	var dialector gorm.Dialector
+
+	switch dbType {
+	case "postgres":
+		dialector = postgres.Open(dsn)
+	case "mysql":
+		fallthrough
+	default:
+		dialector = mysql.Open(dsn)
+	}
+
+	db, err := gorm.Open(dialector, &gorm.Config{})
 
 	// エラー処理
 	if err != nil {
@@ -69,15 +83,6 @@ func MigreteTable(db *gorm.DB) error {
 	// エラー処理
 	if err != nil {
 		logger.PrintErr("AdminUser テーブルのマイグレーションに失敗しました", err)
-		return err
-	}
-
-	// マイグレーション
-	err = db.AutoMigrate(&BridgeToken{})
-
-	// エラー処理
-	if err != nil {
-		logger.PrintErr("BridgeToken テーブルのマイグレーションに失敗しました", err)
 		return err
 	}
 

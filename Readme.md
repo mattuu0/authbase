@@ -4,9 +4,22 @@
 ## 使用技術
 - 言語: Golang
 - 環境: Docker
-- DB: MySQL
+- DB: MySQL / PostgreSQL (環境変数で切替可能)
 - ダッシュボード: React
 - リバースプロキシ: nginx
+
+## データベース設定
+環境変数を使用して、使用するデータベースの種類と接続情報を設定できます。
+
+### auth サービス
+- `DB_TYPE`: `mysql` または `postgres` (デフォルト: `mysql`)
+- `DB_DSN`: 接続文字列
+  - MySQL例: `user:password@tcp(db:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local`
+  - Postgres例: `host=db user=user password=password dbname=dbname port=5432 sslmode=disable TimeZone=Asia/Tokyo`
+
+### app サービス
+- `DATABASE_TYPE`: `mysql` または `postgres` (デフォルト: `mysql`)
+- `DATABASE_DSN`: 接続文字列
 
 ## セットアップ方法
 1. [taskfile](https://taskfile.dev/installation/) をインストールする
