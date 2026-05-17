@@ -30,8 +30,9 @@ func LoginPage(ctx echo.Context) error {
 	isMobile := ctx.QueryParam("ismobile")
 
 	return ctx.Render(http.StatusOK, "login.html", map[string]interface{}{
-		"IsPopup":      isPopup,
-		"IsMobile":     isMobile,
-		"CustomScheme": CUSTOM_SCHEME,
+		"IsPopup":          isPopup,
+		"IsMobile":         isMobile,
+		"CustomScheme":     CUSTOM_SCHEME,
+		"LoginRedirectURL": LOGIN_REDIRECT_URL,
 	})
 }

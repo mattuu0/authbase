@@ -21,6 +21,17 @@
 - `DATABASE_TYPE`: `mysql` または `postgres` (デフォルト: `mysql`)
 - `DATABASE_DSN`: 接続文字列
 
+## 認証後のリダイレクト設定
+ログイン完了後のリダイレクト先URLを環境変数で変更できます。
+
+### auth サービス
+- `LOGIN_REDIRECT_URL`: ログイン完了後のリダイレクト先URL (デフォルト: `/statics/home.html`)
+
+`config/auth.env` に以下を追加して設定します:
+```env
+LOGIN_REDIRECT_URL = "/your/path/here"
+```
+
 ## セットアップ方法
 1. [taskfile](https://taskfile.dev/installation/) をインストールする
 2. ```task --version``` を実行して taskfile を確認する
