@@ -26,10 +26,12 @@
 
 ### auth サービス
 - `LOGIN_REDIRECT_URL`: ログイン完了後のリダイレクト先URL (デフォルト: `/statics/home.html`)
+- `APP_NAME`: ログイン画面に表示するアプリ名 (デフォルト: `AuthBase`)
 
 `config/auth.env` に以下を追加して設定します:
 ```env
 LOGIN_REDIRECT_URL = "/your/path/here"
+APP_NAME = "MyApp"
 ```
 
 ## セットアップ方法

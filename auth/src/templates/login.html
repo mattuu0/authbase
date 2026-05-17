@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ログイン - AuthBase</title>
+    <title>ログイン - {{.AppName}}</title>
     <link rel="stylesheet" href="./public/shared/auth.css">
 </head>
 
@@ -19,7 +19,7 @@
 
     <!-- 2. メイン認証画面 -->
     <div id="auth-card-main" class="auth-card hidden">
-        <div class="wordmark">AuthBase</div>
+        <div class="wordmark">{{.AppName}}</div>
         <p class="tagline" id="ui-subtitle">続行するにはログインしてください</p>
 
         <div id="social-area" class="social-area hidden">

@@ -8,6 +8,9 @@ var (
 
 	// 認証完了後のリダイレクト先URL
 	LOGIN_REDIRECT_URL = "/statics/home.html"
+
+	// ログイン画面に表示するアプリ名
+	APP_NAME = "AuthBase"
 )
 
 func init() {
@@ -22,5 +25,11 @@ func init() {
 	LOGIN_REDIRECT_URL_ENV := os.Getenv("LOGIN_REDIRECT_URL")
 	if LOGIN_REDIRECT_URL_ENV != "" {
 		LOGIN_REDIRECT_URL = LOGIN_REDIRECT_URL_ENV
+	}
+
+	// 環境変数からアプリ名を取得する
+	APP_NAME_ENV := os.Getenv("APP_NAME")
+	if APP_NAME_ENV != "" {
+		APP_NAME = APP_NAME_ENV
 	}
 }

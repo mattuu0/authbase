@@ -34,5 +34,6 @@ func LoginPage(ctx echo.Context) error {
 		"IsMobile":         isMobile,
 		"CustomScheme":     CUSTOM_SCHEME,
 		"LoginRedirectURL": LOGIN_REDIRECT_URL,
+		"AppName":          APP_NAME,
 	})
 }
