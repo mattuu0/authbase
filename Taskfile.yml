@@ -77,6 +77,82 @@ tasks:
       - docker compose restart app
       - docker compose restart nginx
 
+  # ===== テスト =====
+
+  # すべてのテストを実行
+  test:
+    dir: auth/src
+    cmds:
+      - go test ./...
+    silent: true
+
+  # サマリーのみ表示（高速確認）
+  test-summary:
+    dir: auth/src
+    cmds:
+      - go test ./... 2>&1 | grep -E "^(ok|FAIL)"
+    silent: true
+
+  # モデル層テスト
+  test-models:
+    dir: auth/src
+    cmds:
+      - go test -v ./models/...
+    silent: true
+
+  # サービス層テスト
+  test-services:
+    dir: auth/src
+    cmds:
+      - go test -v ./services/...
+    silent: true
+
+  # ミドルウェアテスト
+  test-middlewares:
+    dir: auth/src
+    cmds:
+      - go test -v ./middlewares/...
+    silent: true
+
+  # コントローラーテスト
+  test-controllers:
+    dir: auth/src
+    cmds:
+      - go test -v ./controllers/...
+    silent: true
+
+  # 統合テスト
+  test-integration:
+    dir: auth/src
+    cmds:
+      - go test -v ./integration/...
+    silent: true
+
+  # カバレッジレポート生成（coverage.html）
+  test-coverage:
+    dir: auth/src
+    cmds:
+      - go test -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -html=coverage.out -o coverage.html
+      - go tool cover -func=coverage.out | grep total
+    silent: true
+
+  # レースコンディション検出
+  test-race:
+    dir: auth/src
+    cmds:
+      - go test -race ./...
+    silent: true
+
+  # テストキャッシュをクリア
+  test-clean:
+    dir: auth/src
+    cmds:
+      - go clean -testcache
+    silent: true
+
+  # ===== ここまでテスト =====
+
   genkey:
     cmds:
       - cmd: docker run --rm -it -v .\\openssl\\jwtKeys:/jwtkeys -v .\\nginx\\keys:/sslkeys {{.Build_Image}}

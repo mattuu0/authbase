@@ -1,271 +1,191 @@
-# 🚀 AuthBase テスト クイックスタートガイド
+# AuthBase テストガイド
 
-このガイドではテストの実行方法を簡潔に説明します。
-
-## 📋 前提条件
+## 前提条件
 
 ```bash
-# 必要な依存関係をインストール
 cd auth/src
 go mod download
 ```
 
-## 🎯 基本的な使い方
-
-### 1. すべてのテストを実行
-
-```bash
-# Makefileを使用（推奨）
-make test
-
-# または直接実行
-go test -v ./...
-```
-
-**出力例:**
-```
-╔════════════════════════════════════════════════╗
-║                                                ║
-║         AuthBase Testing Suite                ║
-║                                                ║
-╚════════════════════════════════════════════════╝
-
-🚀 [START] CreateUser - Success Case
-📍 [STEP] CreateUser - Success Case: Creating test provider
-📍 [STEP] CreateUser - Success Case: Creating new user
-✅ [PASS] CreateUser - Success Case: User creation: no error
-📍 [STEP] CreateUser - Success Case: Verifying user was created
-✅ [PASS] CreateUser - Success Case: User retrieval: no error
-🏁 [END] CreateUser - Success Case: completed in 45ms
-─────────────────────────────────────────────────────
-```
-
-### 2. 特定のテストカテゴリを実行
-
-```bash
-# モデル層のみ
-make test-models
-
-# サービス層のみ
-make test-services
-
-# 統合テストのみ
-make test-integration
-```
-
-### 3. 機能別テスト
-
-```bash
-# ユーザー機能のテスト
-make test-user
-
-# 認証機能のテスト
-make test-auth
-
-# セッション機能のテスト
-make test-session
-```
-
-## 🎨 テスト出力の見方
-
-### ✅ 成功時の出力
-
-```
-🚀 [START] TestName
-📍 [STEP] TestName: Doing something
-✅ [PASS] TestName: Operation succeeded
-🏁 [END] TestName: completed in 23ms
-```
-
-### ❌ 失敗時の出力
-
-```
-🚀 [START] TestName
-📍 [STEP] TestName: Doing something
-❌ [FAIL] TestName: Expected X but got Y
-```
-
-### ℹ️ 情報出力
-
-```
-ℹ️ [INFO] TestName: Additional information
-⚠️ [WARN] TestName: Warning message
-```
-
-## 🔧 便利なコマンド
-
-### サマリーのみ表示（高速）
-
-```bash
-make test-summary
-```
-
-**出力:**
-```
-✓ ok    auth/models      2.345s
-✓ ok    auth/services    3.123s
-✓ ok    auth/middlewares 1.234s
-```
-
-### カバレッジレポート生成
-
-```bash
-make test-coverage
-```
-
-**出力:**
-```
-▶ Generating coverage report...
-✓ Coverage report generated: coverage.html
-Total Coverage: 85.4%
-```
-
-ブラウザで `coverage.html` を開くとビジュアルなカバレッジを確認できます。
-
-### テストをリアルタイムで監視
-
-```bash
-# シェルスクリプト版
-chmod +x test.sh
-./test.sh watch
-
-# またはMakefile版（entr コマンドが必要）
-make watch
-```
-
-## 📊 テストの構成
-
-```
-auth/src/
-├── models/
-│   ├── user_create_test.go      # ユーザー作成
-│   ├── user_retrieve_test.go    # ユーザー取得
-│   ├── user_update_test.go      # ユーザー更新
-│   ├── user_delete_test.go      # ユーザー削除
-│   └── user_label_test.go       # ラベル管理
-├── services/
-│   ├── basicuser_signup_test.go # サインアップ
-│   └── basicuser_login_test.go  # ログイン
-└── testing/
-    ├── setup.go                  # テストセットアップ
-    └── helper.go                 # テストヘルパー
-```
-
-## 🎭 シェルスクリプトを使用
-
-```bash
-# すべてのテスト（見やすい出力）
-./test.sh
-
-# モデルのみ
-./test.sh models
-
-# サービスのみ
-./test.sh services
-
-# クイックテスト
-./test.sh quick
-```
-
-## 💡 Tips
-
-### 特定のテスト関数だけ実行
-
-```bash
-go test -v -run TestCreateUser_Success ./models/
-```
-
-### 失敗したテストのみ再実行
-
-```bash
-go test -v -count=1 ./... | grep FAIL
-```
-
-### テストを並列実行
-
-```bash
-go test -v -parallel 4 ./...
-```
-
-### レースコンディションをチェック
-
-```bash
-make test-race
-```
-
-## 🐛 トラブルシューティング
-
-### テストが失敗する場合
-
-1. **キャッシュをクリア**
-   ```bash
-   make test-clean
-   make test
-   ```
-
-2. **依存関係を再インストール**
-   ```bash
-   go mod tidy
-   go mod download
-   ```
-
-3. **詳細ログを表示**
-   ```bash
-   make test-verbose
-   ```
-
-### よくあるエラー
-
-#### "failed to connect to test database"
-
-```bash
-# SQLiteドライバを確認
-go get gorm.io/driver/sqlite
-go mod tidy
-```
-
-#### "package testing is not in GOROOT"
-
-```bash
-# auth/src ディレクトリで実行していることを確認
-cd auth/src
-make test
-```
-
-## 📈 継続的インテグレーション
-
-GitHub Actionsでの使用例:
-
-```yaml
-name: Tests
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.23'
-      - name: Run tests
-        run: |
-          cd auth/src
-          make test-coverage
-```
-
-## 🎓 次のステップ
-
-- 📖 詳細なドキュメント: `TEST_README.md` を参照
-- 🔍 テストコードを読む: `models/*_test.go` から始める
-- ✏️ テストを追加: 既存のテストをテンプレートとして使用
-
-## 📞 サポート
-
-問題が発生した場合:
-1. `make help` でコマンド一覧を確認
-2. `TEST_README.md` で詳細を確認
-3. GitHubでIssueを作成
+テストはすべてインメモリ SQLite で完結します。外部DBや環境変数の事前設定は不要です。
 
 ---
 
-**Happy Testing! 🎉**
+## テストの実行
+
+### すべてのテストを一括実行
+
+```bash
+# プロジェクトルートから（推奨）
+task test
+
+# auth/src ディレクトリから直接実行
+go test ./...
+```
+
+### サマリーのみ確認（高速）
+
+```bash
+task test-summary
+```
+
+出力例:
+```
+ok  	auth/controllers  0.4s
+ok  	auth/integration  0.6s
+ok  	auth/middlewares  0.8s
+ok  	auth/models       1.3s
+ok  	auth/services    13.1s
+```
+
+---
+
+## レイヤー別実行
+
+テストはレイヤーごとにパッケージが分かれています。
+
+### モデル層（DB操作）
+
+```bash
+task test-models
+```
+
+| テストファイル | 内容 |
+|---|---|
+| `user_create_test.go` | ユーザー作成・重複メールアドレス検出 |
+| `user_read_test.go` | ID/メールアドレスでのユーザー取得・検索 |
+| `user_update_delete_test.go` | ユーザー更新・削除 |
+| `user_label_test.go` | ラベルの追加・削除・取得 |
+
+### サービス層（ビジネスロジック）
+
+```bash
+task test-services
+```
+
+| テストファイル | 内容 |
+|---|---|
+| `jwt_test.go` | アクセストークン生成・クレーム検証・有効期限 |
+| `jwt_parse_test.go` | `ParseAccessToken` 正常系・異常系・期限切れ・name/email クレーム |
+| `token_test.go` | `GetAccessToken` でのラベル・プロバイダ情報の埋め込み |
+| `session_test.go` | セッション作成・検証・削除・BAN ユーザー拒否 |
+| `basicuser_test.go` | Basic認証ユーザー作成・ログイン・パスワードハッシュ |
+| `basicuser_signup_test.go` | サインアップ（重複・プロバイダ無効・正常系） |
+| `basicuser_login_test.go` | ログイン（誤パスワード・存在しないユーザー・複数回試行） |
+| `user_test.go` | ユーザーCRUD・BAN切替・公開情報取得 |
+| `admin_test.go` | 管理者作成（2人目拒否）・ログイン・ステータス確認 |
+| `label_test.go` | ラベルCRUD・重複名エラー |
+| `bridge_test.go` | ブリッジトークン発行・交換・使い捨て・改ざん検知 |
+| `auth_test.go` | ログアウトでセッション削除・他セッションへの影響なし |
+
+### ミドルウェア層
+
+```bash
+task test-middlewares
+```
+
+| テストファイル | 内容 |
+|---|---|
+| `auth_test.go` | 有効トークン・無効トークン・BAN ユーザー・削除済みセッション・コンテキスト値 |
+
+### コントローラー層
+
+```bash
+task test-controllers
+```
+
+| テストファイル | 内容 |
+|---|---|
+| `userinfo_test.go` | `/userinfo` エンドポイント・Bearer prefix 処理・セッショントークン拒否・exp フィールド |
+
+### 統合テスト（E2E フロー）
+
+```bash
+task test-integration
+```
+
+| テストファイル | 内容 |
+|---|---|
+| `basic_auth_test.go` | サインアップ→/me→ログアウト→無効化→再ログインの完全フロー |
+| `token_test.go` | サインアップ→セッショントークン→アクセストークン取得フロー |
+| `session_test.go` | 複数セッション管理・片方ログアウト後の独立性確認 |
+| `error_test.go` | 不正な認証情報・不正JSON・認証ヘッダーなし |
+| `userinfo_test.go` | サインアップ→アクセストークン→`/userinfo` 完全フロー・ラベル検証・exp フィールド |
+
+---
+
+## 特定のテストだけ実行
+
+```bash
+cd auth/src
+
+# テスト名を -run で指定（正規表現）
+go test -v -run TestCreateBasicUser ./services/...
+go test -v -run TestGetUserInfo ./controllers/...
+go test -v -run TestUserInfoFlow ./integration/...
+go test -v -run TestParseAccessToken ./services/...
+go test -v -run TestToggleBan ./services/...
+
+# サブテストまで指定
+go test -v -run "TestGetAccessToken/token_contains_labels" ./services/...
+```
+
+---
+
+## カバレッジ
+
+```bash
+# HTML レポートを生成して coverage.html を開く
+task test-coverage
+```
+
+---
+
+## その他のオプション
+
+```bash
+# レースコンディション検出
+task test-race
+
+# テストキャッシュをクリアして再実行
+task test-clean
+task test
+```
+
+---
+
+## テスト設計の方針
+
+| 項目 | 方針 |
+|---|---|
+| DB | インメモリ SQLite。外部接続不要 |
+| 分離 | 各テスト関数で `SetupTestDB` / `CleanupTestDB` を呼び出し独立 |
+| 認証キー | テスト用 Ed25519 固定鍵（`testing/constants.go`） |
+| セッション秘密 | `TOKEN_SECRET=test-secret-key-for-testing-purposes-only` |
+
+---
+
+## トラブルシューティング
+
+### テストが失敗する
+
+```bash
+task test-clean
+task test
+```
+
+### 依存関係エラー
+
+```bash
+cd auth/src
+go mod tidy
+go mod download
+```
+
+### SQLite ドライバエラー
+
+```bash
+cd auth/src
+go get gorm.io/driver/sqlite
+go mod tidy
+```

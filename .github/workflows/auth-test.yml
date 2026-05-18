@@ -10,40 +10,43 @@ on:
 
 jobs:
   test:
-    name: Run Go Tests in Docker
+    name: Run Go Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build test image
-        run: |
-          docker build \
-            --target test \
-            -t auth-test:latest \
-            ./auth
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: auth/src/go.mod
+          cache-dependency-path: auth/src/go.sum
 
-      - name: Run tests and extract coverage
-        run: |
-          # コンテナを実行してテストとカバレッジ、Markdownレポートを生成
-          # test.sh を実行するようにコマンドを変更
-          docker run --name auth-test-container auth-test:latest /bin/bash -c "chmod +x test.sh && ./test.sh && go test -v -coverprofile=coverage.out -covermode=atomic ./..."
-          
-          # 必要なファイルをホスト側にコピー
-          docker cp auth-test-container:/root/src/coverage.out ./auth/src/coverage.out
-          docker cp auth-test-container:/root/src/TEST_RESULT.md ./auth/src/TEST_RESULT.md
-          
-          # GitHub Actions の Job Summary にレポートを追加
-          cat ./auth/src/TEST_RESULT.md >> $GITHUB_STEP_SUMMARY
-          
-          # コンテナを削除
-          docker rm auth-test-container
+      - name: Download dependencies
+        working-directory: auth/src
+        run: go mod download
 
-      - name: Upload test artifacts
+      - name: Build
+        working-directory: auth/src
+        run: go build ./...
+
+      - name: Run tests (all layers)
+        working-directory: auth/src
+        run: go test -v -count=1 -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Show coverage summary
+        working-directory: auth/src
+        run: go tool cover -func=coverage.out | tail -1
+
+      - name: Generate HTML coverage report
+        working-directory: auth/src
+        run: go tool cover -html=coverage.out -o coverage.html
+
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: coverage-report
           path: |
             auth/src/coverage.out
-            auth/src/TEST_RESULT.md
+            auth/src/coverage.html
