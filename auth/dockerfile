@@ -34,7 +34,7 @@ WORKDIR /root/src
 # 依存モジュールインストール
 RUN go mod download
 # ビルド
-RUN CGO_ENABLED=0 go build -x --ldflags "-s -w" -o /go/bin/auth .
+RUN CGO_ENABLED=0 go build --ldflags "-s -w" -o /go/bin/auth .
 
 # 実行環境
 FROM gcr.io/distroless/static-debian12 AS release
