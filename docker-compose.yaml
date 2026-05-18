@@ -1,3 +1,5 @@
+name: authbase
+
 services:
     # リバースプロキシけんWeサーバ
     nginx:

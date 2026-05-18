@@ -69,10 +69,68 @@ APP_NAME = "MyApp"
 - ```task clean``` : コンテナ落として全て削除
 - ```task down``` : コンテナ落とす
 
+## テスト
+
+### 前提条件
+
+```bash
+cd auth/src
+go mod download
+```
+
+テストはすべてインメモリ SQLite で完結します。外部DBや環境変数の事前設定は不要です。
+
+### テストの実行
+
+```bash
+# すべてのテストを実行（推奨）
+task test
+
+# サマリーのみ表示（高速確認）
+task test-summary
+```
+
+### レイヤー別に実行する
+
+| コマンド | 対象 |
+|---|---|
+| `task test-models` | モデル層（DB操作） |
+| `task test-services` | サービス層（ビジネスロジック） |
+| `task test-middlewares` | ミドルウェア層（認証） |
+| `task test-controllers` | コントローラー層 |
+| `task test-integration` | 統合テスト（E2Eフロー） |
+
+### カバレッジレポート
+
+```bash
+# HTML レポートを生成（coverage.html が作成される）
+task test-coverage
+```
+
+### 特定のテスト関数だけ実行
+
+```bash
+cd auth/src
+go test -v -run TestCreateBasicUser ./services/...
+go test -v -run TestGetUserInfo ./controllers/...
+go test -v -run TestUserInfoFlow ./integration/...
+```
+
+詳細は [`auth/src/TESTING_QUICKSTART.md`](auth/src/TESTING_QUICKSTART.md) を参照してください。
+
 ## CI/CD
+
 GitHub Actions を使用して、コードの品質管理を行っています。
 
-- **自動テスト**: `auth/src` 配下のコードが変更（push または pull request）された際に自動で実行されます。
-  - **実行内容**: ユニットテスト、統合テストの実行およびカバレッジの測定。
-  - **カバレッジ**: 実行結果はアーティファクト（`coverage-report`）として保存されます。
-- **詳細**: テストの実行方法や構成については `auth/src/TESTING_QUICKSTART.md` を参照してください。
+| ワークフロー | トリガー | 内容 |
+|---|---|---|
+| `auth-test.yml` | `auth/src/**` への push / PR | ビルド確認・全テスト実行・カバレッジ計測 |
+| `docker-publish.yml` | `v*.*.*` タグ push | Docker イメージをビルドして GHCR に push |
+
+### テストワークフローの流れ
+
+1. Go セットアップ（`go.mod` からバージョンを自動取得）
+2. `go build ./...` でビルド確認
+3. `go test -v -count=1 -coverprofile=coverage.out ./...` で全レイヤーのテストを実行
+4. カバレッジサマリーをログに表示
+5. `coverage.out` / `coverage.html` をアーティファクトとして保存

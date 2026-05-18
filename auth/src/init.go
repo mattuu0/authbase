@@ -92,6 +92,9 @@ func SetupRouter(router *echo.Echo) {
 	// info エンドポイント
 	router.GET("/info/:userid", controllers.GetInfo)
 
+	// アクセストークンからユーザー情報を取得
+	router.GET("/userinfo", controllers.GetUserInfo)
+
 	// 情報を取得する
 	router.GET("/me", controllers.GetMe, middlewares.RequireAuth)
 

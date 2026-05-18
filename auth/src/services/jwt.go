@@ -64,29 +64,80 @@ const (
 
 type AccessTokenClaim struct {
 	UserID   string   // ユーザーID
+	Name     string   // ユーザー名
+	Email    string   // メールアドレス
 	Labels   []string // ラベル
 	ProvCode models.ProviderCode
 	ProvUid  string
 }
 
 func AccessTokenJwt(args AccessTokenClaim) (string, error) {
-	// Create a new token object, specifying signing method and the claims
-	// you would like it to contain.
 	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, jwt.MapClaims{
-		// 有効期限
-		"exp": time.Now().Add(tokenExpiry).Unix(),
-		// ラベル
-		"labels": args.Labels,
-		// ユーザーID
-		"userID": args.UserID,
-		// プロバイダ
+		"exp":      time.Now().Add(tokenExpiry).Unix(),
+		"userID":   args.UserID,
+		"name":     args.Name,
+		"email":    args.Email,
+		"labels":   args.Labels,
 		"provCode": args.ProvCode,
-		// プロバイダUID
-		"provUid": args.ProvUid,
+		"provUid":  args.ProvUid,
 	})
 
-	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString(JwtPrivateKey)
-
 	return tokenString, err
+}
+
+type AccessTokenInfo struct {
+	UserID   string
+	Name     string
+	Email    string
+	Labels   []string
+	ProvCode string
+	ProvUid  string
+	Exp      int64
+}
+
+func ParseAccessToken(tokenString string) (*AccessTokenInfo, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return JwtPublicKey, nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodEdDSA.Alg()}))
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, jwt.ErrTokenInvalidClaims
+	}
+
+	info := &AccessTokenInfo{}
+
+	if v, ok := claims["userID"].(string); ok {
+		info.UserID = v
+	}
+	if v, ok := claims["name"].(string); ok {
+		info.Name = v
+	}
+	if v, ok := claims["email"].(string); ok {
+		info.Email = v
+	}
+	if v, ok := claims["provCode"].(string); ok {
+		info.ProvCode = v
+	}
+	if v, ok := claims["provUid"].(string); ok {
+		info.ProvUid = v
+	}
+	if v, ok := claims["exp"].(float64); ok {
+		info.Exp = int64(v)
+	}
+
+	if rawLabels, ok := claims["labels"].([]interface{}); ok {
+		for _, l := range rawLabels {
+			if s, ok := l.(string); ok {
+				info.Labels = append(info.Labels, s)
+			}
+		}
+	}
+
+	return info, nil
 }
