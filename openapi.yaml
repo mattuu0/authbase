@@ -1,0 +1,1309 @@
+openapi: "3.0.3"
+info:
+  title: AuthBase API
+  description: |
+    AuthBase は OAuth2 / Basic 認証を提供する認証プラットフォームです。
+    ユーザー認証・セッション管理・管理者機能を REST API として提供します。
+
+    ## 認証方式
+    - **セッショントークン**: `Authorization: <token>` ヘッダー（`/basic/signup`, `/basic/login` で取得）
+    - **アクセストークン**: `Authorization: Bearer <token>` ヘッダー（`/token` エンドポイントで取得、Ed25519 署名 JWT）
+    - **管理者セッション**: Cookie ベース（`/admin/login` で取得）
+  version: "1.0.0"
+  contact:
+    name: AuthBase
+
+servers:
+  - url: https://localhost:8947/auth
+    description: ローカル開発環境
+
+tags:
+  - name: auth
+    description: 認証（ログイン・ログアウト・ユーザー情報）
+  - name: basic
+    description: Basic 認証（メール/パスワード）
+  - name: oauth
+    description: OAuth2 認証
+  - name: token
+    description: アクセストークン・ブリッジトークン
+  - name: admin
+    description: 管理者認証
+  - name: admin-api
+    description: 管理者 API（管理者セッション必須）
+
+# ─────────────────────────────────────────────
+# セキュリティスキーム
+# ─────────────────────────────────────────────
+components:
+  securitySchemes:
+    sessionToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        `/basic/signup` または `/basic/login` で取得したセッショントークン。
+        Bearer プレフィックスなしで送信します。
+    bearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        `/token` エンドポイントで取得した Ed25519 署名付き JWT アクセストークン。
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: admin
+      description: |
+        `/admin/login` で設定される管理者セッション Cookie。
+
+  # ─────────────────────────────────────────────
+  # 共通スキーマ
+  # ─────────────────────────────────────────────
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "unauthorized"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ユーザー ID (UUID)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "山田 太郎"
+        email:
+          type: string
+          format: email
+          example: "yamada@example.com"
+        provider:
+          type: string
+          enum: [google, github, discord, microsoftonline, basic]
+          example: "basic"
+        providerId:
+          type: string
+          description: 認証プロバイダー側のユーザー ID
+          example: "google-uid-123"
+        avatar:
+          type: string
+          description: アバター画像の URL
+          example: "/auth/assets/550e8400.png"
+        labels:
+          type: array
+          items:
+            type: string
+          example: ["admin", "verified"]
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T09:00:00Z"
+        banned:
+          type: boolean
+          example: false
+
+    UserInfo:
+      type: object
+      description: /me エンドポイントのレスポンス
+      properties:
+        user_id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "山田 太郎"
+        email:
+          type: string
+          format: email
+          example: "yamada@example.com"
+        prov_code:
+          type: string
+          enum: [google, github, discord, microsoftonline, basic]
+          example: "basic"
+        prov_uid:
+          type: string
+          example: "basic-uid"
+
+    AccessTokenClaims:
+      type: object
+      description: /userinfo エンドポイントのレスポンス（アクセストークンのクレーム）
+      properties:
+        user_id:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "山田 太郎"
+        email:
+          type: string
+          format: email
+          example: "yamada@example.com"
+        labels:
+          type: array
+          items:
+            type: string
+          example: ["admin"]
+        prov_code:
+          type: string
+          example: "basic"
+        prov_uid:
+          type: string
+          example: "basic-uid"
+        exp:
+          type: integer
+          description: トークン有効期限 (Unix timestamp)
+          example: 1700000600
+
+    Label:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ラベル ID（ラベル名と同値）
+          example: "admin"
+        name:
+          type: string
+          example: "admin"
+        color:
+          type: string
+          description: 16進カラーコード
+          example: "#FF0000"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T09:00:00Z"
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: string
+          description: セッション ID
+          example: "sess-uuid-xxx"
+        userId:
+          type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userName:
+          type: string
+          example: "山田 太郎"
+        userEmail:
+          type: string
+          format: email
+          example: "yamada@example.com"
+        ipAddress:
+          type: string
+          example: "192.168.1.1"
+        userAgent:
+          type: string
+          example: "Mozilla/5.0 ..."
+        createdAt:
+          type: integer
+          description: セッション作成日時 (Unix ms)
+          example: 1700000000000
+        expiresAt:
+          type: integer
+          description: セッション有効期限 (Unix ms)
+          example: 1702592000000
+        isActive:
+          type: boolean
+          example: true
+
+    OauthProvider:
+      type: object
+      properties:
+        ProviderName:
+          type: string
+          example: "Google"
+        ProviderCode:
+          type: string
+          enum: [google, github, discord, microsoftonline]
+          example: "google"
+        ClientID:
+          type: string
+          example: "123456789.apps.googleusercontent.com"
+        ClientSecret:
+          type: string
+          example: "GOCSPX-xxxxxxxx"
+        CallbackURL:
+          type: string
+          example: "https://example.com/auth/oauth/google/callback"
+        IsEnabled:
+          type: integer
+          enum: [0, 1]
+          example: 1
+
+    AdminUser:
+      type: object
+      properties:
+        UserID:
+          type: string
+          example: "admin-uuid-xxx"
+        Username:
+          type: string
+          example: "admin"
+        PasswordHash:
+          type: string
+          description: レスポンスでは常に空文字列
+          example: ""
+        IsSystem:
+          type: integer
+          enum: [0, 1]
+          example: 1
+        CreatedAt:
+          type: integer
+          description: 作成日時 (Unix timestamp)
+          example: 1700000000
+
+# ─────────────────────────────────────────────
+# パス定義
+# ─────────────────────────────────────────────
+paths:
+
+  # ──────── Basic 認証 ────────
+  /basic/signup:
+    post:
+      tags: [basic]
+      summary: Basic 認証でユーザー登録
+      description: |
+        メール・パスワードで新規ユーザーを作成し、セッショントークンを返します。
+        パスワードは 8 文字以上、英字・数字を両方含む必要があります。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: "山田 太郎"
+                email:
+                  type: string
+                  format: email
+                  example: "yamada@example.com"
+                password:
+                  type: string
+                  minLength: 8
+                  description: 英字・数字を含む 8 文字以上
+                  example: "Password123"
+      responses:
+        "200":
+          description: 登録成功、セッショントークンを返す
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: セッショントークン（HS512 署名 JWT）
+                    example: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
+        "400":
+          description: バリデーションエラー（パスワード強度不足など）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: メールアドレス重複・サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /basic/login:
+    post:
+      tags: [basic]
+      summary: Basic 認証でログイン
+      description: メール・パスワードで認証し、セッショントークンを返します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "yamada@example.com"
+                password:
+                  type: string
+                  example: "Password123"
+      responses:
+        "200":
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9..."
+        "400":
+          description: リクエスト形式エラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: 認証失敗（メールアドレスまたはパスワードが不正）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── OAuth2 ────────
+  /login/providers:
+    get:
+      tags: [oauth]
+      summary: 有効な認証プロバイダー一覧を取得
+      description: 現在有効になっている認証プロバイダーのコード一覧を返します。
+      responses:
+        "200":
+          description: 有効なプロバイダーコードの配列
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  enum: [google, github, discord, microsoftonline, basic]
+                example: ["google", "github", "basic"]
+
+  /oauth/{provider}:
+    get:
+      tags: [oauth]
+      summary: OAuth2 認証フローを開始
+      description: |
+        指定プロバイダーの OAuth2 認証ページにリダイレクトします。
+        認証完了後は `/oauth/{provider}/callback` にコールバックされます。
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [google, github, discord, microsoftonline]
+          example: "google"
+      responses:
+        "302":
+          description: OAuth2 プロバイダーへリダイレクト
+
+  /oauth/{provider}/callback:
+    get:
+      tags: [oauth]
+      summary: OAuth2 コールバック処理
+      description: |
+        OAuth2 プロバイダーからのコールバックを受け取り、ユーザーを作成またはログインします。
+        成功時は `LOGIN_REDIRECT_URL` に設定されたページへリダイレクトします。
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [google, github, discord, microsoftonline]
+      responses:
+        "302":
+          description: ログイン成功、リダイレクトページへ転送
+
+  # ──────── 認証済みエンドポイント ────────
+  /me:
+    get:
+      tags: [auth]
+      summary: 認証済みユーザーの情報を取得
+      description: セッショントークンから現在のユーザー情報を返します。
+      security:
+        - sessionToken: []
+      responses:
+        "200":
+          description: ユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfo"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /logout:
+    post:
+      tags: [auth]
+      summary: ログアウト
+      description: 現在のセッションを削除します。
+      security:
+        - sessionToken: []
+      responses:
+        "200":
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /info/{userid}:
+    get:
+      tags: [auth]
+      summary: ユーザーの公開情報を取得
+      description: 認証不要でユーザー ID から名前などの公開情報を取得します。
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: 公開ユーザー情報
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+                  name:
+                    type: string
+                    example: "山田 太郎"
+        "500":
+          description: ユーザーが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /userinfo:
+    get:
+      tags: [token]
+      summary: アクセストークンからユーザー情報を取得
+      description: |
+        Bearer アクセストークン（Ed25519 署名 JWT）を検証し、クレームを返します。
+        セッショントークン（HS512）は拒否されます。
+      security:
+        - bearerToken: []
+      responses:
+        "200":
+          description: アクセストークンのクレーム情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessTokenClaims"
+        "401":
+          description: 未認証またはトークン無効
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: BAN されたユーザー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── トークン ────────
+  /token:
+    get:
+      tags: [token]
+      summary: アクセストークンを取得
+      description: セッショントークンを使って Ed25519 署名の JWT アクセストークンを取得します。
+      security:
+        - sessionToken: []
+      responses:
+        "200":
+          description: アクセストークン
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+                  token:
+                    type: string
+                    description: Ed25519 署名 JWT（有効期限 10 分）
+                    example: "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── ブリッジトークン ────────
+  /bridge/issue:
+    post:
+      tags: [token]
+      summary: ブリッジトークンを発行
+      description: |
+        アプリ間のトークン交換に使うワンタイムブリッジトークンを発行します。
+        認証済みセッションが必要です。
+      security:
+        - sessionToken: []
+      responses:
+        "200":
+          description: ブリッジトークン
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bridge_token:
+                    type: string
+                    description: ワンタイム JWT ブリッジトークン
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /bridge/exchange:
+    get:
+      tags: [token]
+      summary: ブリッジトークンを交換
+      description: |
+        ブリッジトークンを検証し、リフレッシュトークンを返します。
+        ブリッジトークンはワンタイム使用です（2 回目は拒否）。
+      security:
+        - bearerToken: []
+      responses:
+        "200":
+          description: リフレッシュトークン
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refresh_token:
+                    type: string
+                    example: "original-refresh-token"
+        "400":
+          description: Authorization ヘッダーなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: トークン無効または使用済み
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── アイコン ────────
+  /icon:
+    post:
+      tags: [auth]
+      summary: ユーザーアイコンをアップロード
+      description: PNG 形式にリサイズされて保存されます。
+      security:
+        - sessionToken: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 画像ファイル（JPEG/PNG/GIF など）
+      responses:
+        "200":
+          description: アップロード成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: "success"
+        "400":
+          description: ファイルなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /icon/{userid}:
+    get:
+      tags: [auth]
+      summary: ユーザーアイコンを取得
+      description: ユーザーのアバター画像 URL へリダイレクトします。
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "307":
+          description: アイコン URL へリダイレクト
+        "404":
+          description: アイコンが見つからない
+
+  # ──────── 管理者認証 ────────
+  /admin/signup:
+    post:
+      tags: [admin]
+      summary: 管理者ユーザーを作成
+      description: |
+        システム管理者を作成します。
+        **管理者は 1 名のみ作成可能**です。2 回目以降の呼び出しはエラーになります。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  example: "AdminPass123!"
+      responses:
+        "200":
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "500":
+          description: すでに管理者が存在する
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/login:
+    post:
+      tags: [admin]
+      summary: 管理者ログイン
+      description: 管理者認証情報でログインし、Cookie セッションを設定します。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  example: "AdminPass123!"
+      responses:
+        "200":
+          description: ログイン成功（`admin` Cookie がセットされる）
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "admin=MTYwMDAwMDAwMHxEdi1CQl...; HttpOnly"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "500":
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/logout:
+    post:
+      tags: [admin]
+      summary: 管理者ログアウト
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: ログアウト成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/status:
+    get:
+      tags: [admin]
+      summary: 管理者ユーザーの存在確認
+      description: 管理者ユーザーが登録済みかどうかを返します（認証不要）。
+      responses:
+        "200":
+          description: 管理者ステータス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  HasSystemUser:
+                    type: boolean
+                    example: true
+
+  /admin/info:
+    get:
+      tags: [admin]
+      summary: 管理者自身の情報を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: 管理者ユーザー情報（PasswordHash は空）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: 未認証
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── 管理者 API: ユーザー管理 ────────
+  /api/user/all:
+    get:
+      tags: [admin-api]
+      summary: 全ユーザー一覧を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: ユーザー一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/user:
+    post:
+      tags: [admin-api]
+      summary: ユーザーを作成（管理者）
+      description: 管理者がユーザーを直接作成します。
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: "新規ユーザー"
+                email:
+                  type: string
+                  format: email
+                  example: "new@example.com"
+                password:
+                  type: string
+                  example: "UserPass123!"
+      responses:
+        "201":
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: メールアドレス重複・サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      tags: [admin-api]
+      summary: ユーザーを更新（管理者）
+      description: ユーザーの名前・ラベルを更新します。
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name]
+              properties:
+                id:
+                  type: string
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                name:
+                  type: string
+                  example: "更新後の名前"
+                avatar:
+                  type: string
+                  description: base64 画像データ（`data:image/...` 形式）
+                labels:
+                  type: array
+                  items:
+                    type: string
+                  example: ["admin", "verified"]
+      responses:
+        "200":
+          description: 更新後のユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [admin-api]
+      summary: ユーザーを削除（管理者）
+      security:
+        - adminSession: []
+      parameters:
+        - name: userid
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 削除するユーザーの ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: "success"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/user/ban:
+    put:
+      tags: [admin-api]
+      summary: ユーザーの BAN 状態を切り替え
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [UserID, IsBanned]
+              properties:
+                UserID:
+                  type: string
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                IsBanned:
+                  type: boolean
+                  description: true でBAN、false でBAN解除
+                  example: true
+      responses:
+        "200":
+          description: 更新後のユーザー情報
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── 管理者 API: ラベル管理 ────────
+  /api/labels:
+    get:
+      tags: [admin-api]
+      summary: ラベル一覧を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: ラベル一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Label"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags: [admin-api]
+      summary: ラベルを作成
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  description: ユニークなラベル名
+                  example: "premium"
+                color:
+                  type: string
+                  description: 16進カラーコード（デフォルト: #000000）
+                  example: "#FFD700"
+      responses:
+        "200":
+          description: 作成されたラベル
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Label"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: ラベル名重複
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    put:
+      tags: [admin-api]
+      summary: ラベルを更新
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name, color]
+              properties:
+                id:
+                  type: string
+                  description: 現在のラベル名（ID として使用）
+                  example: "premium"
+                name:
+                  type: string
+                  example: "premium"
+                color:
+                  type: string
+                  example: "#00FF00"
+      responses:
+        "200":
+          description: 更新後のラベル
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Label"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [admin-api]
+      summary: ラベルを削除
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: string
+                  description: 削除するラベル名（ID）
+                  example: "premium"
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── 管理者 API: プロバイダー管理 ────────
+  /api/providers:
+    get:
+      tags: [admin-api]
+      summary: プロバイダー一覧を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: プロバイダー一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+
+    post:
+      tags: [admin-api]
+      summary: プロバイダー設定を更新
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+
+  /api/providers/oauth:
+    get:
+      tags: [admin-api]
+      summary: OAuth プロバイダー一覧を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: OAuth プロバイダー一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OauthProvider"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    post:
+      tags: [admin-api]
+      summary: OAuth プロバイダー設定を更新
+      security:
+        - adminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  ProviderCode:
+                    type: string
+                    enum: [google, github, discord, microsoftonline]
+                  ClientID:
+                    type: string
+                  ClientSecret:
+                    type: string
+                  CallbackURL:
+                    type: string
+                  IsEnabled:
+                    type: integer
+                    enum: [0, 1]
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: "success"
+        "400":
+          description: リクエスト形式エラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ──────── 管理者 API: セッション管理 ────────
+  /api/session:
+    get:
+      tags: [admin-api]
+      summary: 全セッション一覧を取得
+      security:
+        - adminSession: []
+      responses:
+        "200":
+          description: セッション一覧
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: [admin-api]
+      summary: セッションを削除（強制ログアウト）
+      security:
+        - adminSession: []
+      parameters:
+        - name: sessionid
+          in: header
+          required: true
+          schema:
+            type: string
+          description: 削除するセッション ID
+          example: "sess-uuid-xxx"
+      responses:
+        "200":
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "success"
+        "401":
+          description: 管理者セッションなし
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /login:
+    get:
+      tags: [auth]
+      summary: ログインページを表示
+      description: HTML ログインページを返します。
+      responses:
+        "200":
+          description: ログイン HTML ページ
+          content:
+            text/html:
+              schema:
+                type: string
