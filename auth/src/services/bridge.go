@@ -19,8 +19,8 @@ type BridgeTokenClaims struct {
 }
 
 // bridgeTokenSecret はブリッジトークン署名用の秘密鍵です。
-// ※本来は環境変数から取得して管理する必要があります。
-var bridgeTokenSecret = []byte("super-secret-bridge-key")
+// Init() で BRIDGE_TOKEN_SECRET 環境変数から設定されます。
+var bridgeTokenSecret []byte
 
 // IssueBridgeToken は指定されたユーザーIDに対して、5分間有効な一時的JWTブリッジトークンを発行します。
 func IssueBridgeToken(userID string, refreshToken string) (string, error) {

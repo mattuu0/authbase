@@ -34,6 +34,19 @@ LOGIN_REDIRECT_URL = "/your/path/here"
 APP_NAME = "MyApp"
 ```
 
+## セキュリティ関連の環境変数
+
+auth サービスの正常動作に必要なシークレットです。`task setup`（`config/config.py`）を実行すると自動生成されます。手動で設定する場合は十分な長さのランダム文字列を使用してください。
+
+| 変数名 | 説明 | 自動生成 |
+|--------|------|---------|
+| `TOKEN_SECRET` | セッショントークンの署名鍵 | ✅ |
+| `ADMIN_SESSION_KEY` | 管理者セッションの署名鍵 | ✅ |
+| `BRIDGE_TOKEN_SECRET` | ブリッジトークン（アプリ間トークン交換）の署名鍵 | ✅ |
+| `JWT_PRIVATE_KEY` | アクセストークン署名用 Ed25519 秘密鍵（PEM形式） | ✅ (openssl) |
+
+> **注意**: 既存環境でセットアップスクリプトを実行済みの場合、`BRIDGE_TOKEN_SECRET` を `auth.env` に手動で追加する必要があります。
+
 ## セットアップ方法
 1. [taskfile](https://taskfile.dev/installation/) をインストールする
 2. ```task --version``` を実行して taskfile を確認する

@@ -90,6 +90,7 @@ def create_auth_env(db_type, db_dsn):
     # 認証とセッション用のランダムキーを自動生成（長さ64文字）
     token_secret_key = generate_random_key()
     admin_session_key = generate_random_key()
+    bridge_token_secret_key = generate_random_key()
 
     # auth.env のテンプレート
     auth_env_template = f"""
@@ -117,6 +118,7 @@ DB_DSN = "{db_dsn}"
 
 TOKEN_SECRET = {token_secret_key}
 ADMIN_SESSION_KEY = {admin_session_key}
+BRIDGE_TOKEN_SECRET = {bridge_token_secret_key}
 
 GRPC_ADDR = ":9000"
 CUSTOM_SCHEME = "authbase"

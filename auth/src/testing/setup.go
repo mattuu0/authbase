@@ -97,6 +97,7 @@ MCowBQYDK2VwAyEAGb9ECWmEzf6FQbrBZ9w7lshQhqowtrbLDFw4rXAxZuE=
 -----END PUBLIC KEY-----`)
 
 	os.Setenv("TOKEN_SECRET", "test-secret-key-for-testing-purposes-only")
+	os.Setenv("BRIDGE_TOKEN_SECRET", "test-bridge-secret-key-for-testing-purposes-only")
 	os.Setenv("ADMIN_SESSION_KEY", "test-admin-session-key")
 	os.Setenv("DB_DSN", ":memory:")
 }

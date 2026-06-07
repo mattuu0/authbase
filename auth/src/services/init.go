@@ -18,6 +18,13 @@ func Init() {
 	// 環境変数からトークンシークレットを取得
 	TokenSecret = os.Getenv("TOKEN_SECRET")
 
+	// 環境変数からブリッジトークン秘密鍵を取得
+	bridgeSecret := os.Getenv("BRIDGE_TOKEN_SECRET")
+	if bridgeSecret == "" {
+		logger.PrintErr("BRIDGE_TOKEN_SECRET が設定されていません")
+	}
+	bridgeTokenSecret = []byte(bridgeSecret)
+
 	// 環境変数から秘密鍵を取得
 	certString := os.Getenv("JWT_PRIVATE_KEY")
 
