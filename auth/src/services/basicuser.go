@@ -6,7 +6,32 @@ import (
 	"auth/utils"
 	"errors"
 	"net/http"
+	"unicode"
 )
+
+// validatePassword はパスワードが要件を満たすか検証します。
+// 要件: 8文字以上、英字を1文字以上含む、数字を1文字以上含む
+func validatePassword(password string) error {
+	if len(password) < 8 {
+		return errors.New("パスワードは8文字以上で入力してください")
+	}
+	var hasLetter, hasDigit bool
+	for _, r := range password {
+		switch {
+		case unicode.IsLetter(r):
+			hasLetter = true
+		case unicode.IsDigit(r):
+			hasDigit = true
+		}
+	}
+	if !hasLetter {
+		return errors.New("パスワードには英字を1文字以上含めてください")
+	}
+	if !hasDigit {
+		return errors.New("パスワードには数字を1文字以上含めてください")
+	}
+	return nil
+}
 
 type CreateBasicUserArgs struct {
 	Name     string // ユーザー名
@@ -54,6 +79,16 @@ func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
 			Code: http.StatusConflict,
 			Message: "user already exists",
 			Error:   errors.New("user already exists"),
+			Success: false,
+		}
+	}
+
+	// パスワードの要件を検証する
+	if err := validatePassword(args.Password); err != nil {
+		return "", structs.HttpResult{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+			Error:   err,
 			Success: false,
 		}
 	}
