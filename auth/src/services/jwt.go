@@ -6,6 +6,7 @@ import (
 	"crypto/ed25519"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -91,12 +92,16 @@ type AccessTokenInfo struct {
 	Name     string
 	Email    string
 	Labels   []string
-	ProvCode string
+	ProvCode models.ProviderCode
 	ProvUid  string
 	Exp      int64
 }
 
 func ParseAccessToken(tokenString string) (*AccessTokenInfo, error) {
+	if JwtPublicKey == nil {
+		return nil, errors.New("JWT公開鍵が初期化されていません")
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return JwtPublicKey, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodEdDSA.Alg()}))
@@ -110,11 +115,13 @@ func ParseAccessToken(tokenString string) (*AccessTokenInfo, error) {
 		return nil, jwt.ErrTokenInvalidClaims
 	}
 
-	info := &AccessTokenInfo{}
-
-	if v, ok := claims["userID"].(string); ok {
-		info.UserID = v
+	userID, ok := claims["userID"].(string)
+	if !ok || userID == "" {
+		return nil, errors.New("トークンにuserIDクレームがありません")
 	}
+
+	info := &AccessTokenInfo{UserID: userID}
+
 	if v, ok := claims["name"].(string); ok {
 		info.Name = v
 	}
@@ -122,7 +129,7 @@ func ParseAccessToken(tokenString string) (*AccessTokenInfo, error) {
 		info.Email = v
 	}
 	if v, ok := claims["provCode"].(string); ok {
-		info.ProvCode = v
+		info.ProvCode = models.ProviderCode(v)
 	}
 	if v, ok := claims["provUid"].(string); ok {
 		info.ProvUid = v

@@ -36,7 +36,7 @@ func TestParseAccessToken(t *testing.T) {
 		assert.Equal(t, claims.UserID, info.UserID)
 		assert.Equal(t, claims.Name, info.Name)
 		assert.Equal(t, claims.Email, info.Email)
-		assert.Equal(t, string(claims.ProvCode), info.ProvCode)
+		assert.Equal(t, claims.ProvCode, info.ProvCode)
 		assert.Equal(t, claims.ProvUid, info.ProvUid)
 		assert.ElementsMatch(t, claims.Labels, info.Labels)
 		assert.Greater(t, info.Exp, time.Now().Unix())

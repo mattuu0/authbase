@@ -64,7 +64,7 @@ func TestGetAccessToken(t *testing.T) {
 
 		info, err := ParseAccessToken(tokenString)
 		require.NoError(t, err)
-		assert.Equal(t, string(models.Google), info.ProvCode)
+		assert.Equal(t, models.Google, info.ProvCode)
 		assert.Equal(t, user.ProvUID, info.ProvUid)
 	})
 
