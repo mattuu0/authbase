@@ -1,0 +1,54 @@
+name: App Service Tests
+
+on:
+  push:
+    paths:
+      - 'app/src/**'
+      - '.github/workflows/app-test.yml'
+  pull_request:
+    paths:
+      - 'app/src/**'
+      - '.github/workflows/app-test.yml'
+
+jobs:
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: app/src/go.mod
+          cache-dependency-path: app/src/go.sum
+
+      - name: Download dependencies
+        working-directory: app/src
+        run: go mod download
+
+      - name: Build
+        working-directory: app/src
+        run: go build ./...
+
+      - name: Run tests with coverage
+        working-directory: app/src
+        run: go test -count=1 -timeout 60s -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Show coverage summary
+        working-directory: app/src
+        run: |
+          if [ -f coverage.out ]; then
+            go tool cover -func=coverage.out | tail -1
+          else
+            echo "No test files found (coverage skipped)"
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: app-coverage-report
+          path: app/src/coverage.out
