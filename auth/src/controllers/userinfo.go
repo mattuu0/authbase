@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"auth/models"
 	"auth/services"
 	"net/http"
 	"strings"
@@ -14,14 +15,23 @@ func GetUserInfo(ctx echo.Context) error {
 		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "Authorization header is required"})
 	}
 
-	tokenString := raw
-	if strings.HasPrefix(raw, "Bearer ") {
-		tokenString = raw[7:]
+	tokenString, ok := strings.CutPrefix(raw, "Bearer ")
+	if !ok {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "Authorization header must use Bearer scheme"})
 	}
 
 	info, err := services.ParseAccessToken(tokenString)
 	if err != nil {
 		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "invalid or expired token"})
+	}
+
+	// BANされたユーザーはアクセス不可
+	user, result := models.GetUser(info.UserID)
+	if result.Error != nil {
+		return ctx.JSON(http.StatusUnauthorized, echo.Map{"error": "unauthorized"})
+	}
+	if user.IsBanned == 1 {
+		return ctx.JSON(http.StatusForbidden, echo.Map{"error": "Your account has been banned"})
 	}
 
 	return ctx.JSON(http.StatusOK, echo.Map{

@@ -77,7 +77,7 @@ func TestGetUserInfo(t *testing.T) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	})
 
-	t.Run("token without Bearer prefix is accepted", func(t *testing.T) {
+	t.Run("token without Bearer prefix returns 401", func(t *testing.T) {
 		accessToken, err := services.GetAccessToken(user.UserID)
 		require.NoError(t, err)
 
@@ -86,7 +86,7 @@ func TestGetUserInfo(t *testing.T) {
 		rec := httptest.NewRecorder()
 		e.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, http.StatusUnauthorized, rec.Code)
 	})
 
 	t.Run("missing Authorization header returns 401", func(t *testing.T) {
