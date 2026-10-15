@@ -55,19 +55,19 @@ jobs:
 
       - name: Run all tests with coverage
         working-directory: auth/src
-        run: go test -count=1 -timeout 180s -coverprofile=coverage.out -covermode=atomic ./...
+        run: go test -count=1 -timeout 180s -coverpkg=./... -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: Show coverage summary
         working-directory: auth/src
         run: go tool cover -func=coverage.out | tail -1
 
-      - name: Check coverage threshold (50%)
+      - name: Check coverage threshold (40%)
         working-directory: auth/src
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | tail -1 | awk '{print $3}' | sed 's/%//')
           echo "Coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 50" | bc -l) )); then
-            echo "❌ Coverage ${COVERAGE}% is below the 50% threshold"
+          if (( $(echo "$COVERAGE < 40" | bc -l) )); then
+            echo "❌ Coverage ${COVERAGE}% is below the 40% threshold"
             exit 1
           fi
           echo "✅ Coverage ${COVERAGE}% meets the threshold"

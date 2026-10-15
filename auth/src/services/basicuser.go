@@ -41,6 +41,16 @@ type CreateBasicUserArgs struct {
 
 // 一般ユーザーを作成する (返却値: トークン, HttpResult)
 func CreateBasicUser(args CreateBasicUserArgs) (string, structs.HttpResult) {
+	// 新規登録が禁止されている場合は、DB に触れる前に拒否する(ログインには影響しない)
+	if !SignupAllowed() {
+		return "", structs.HttpResult{
+			Code:    http.StatusForbidden,
+			Message: "signup is disabled",
+			Error:   errors.New("signup is disabled"),
+			Success: false,
+		}
+	}
+
 	// プロバイダを取得
 	provider, err := models.GetProvider(models.Basic)
 
